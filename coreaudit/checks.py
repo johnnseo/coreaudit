@@ -25,7 +25,7 @@ def run_rules(f: Facts, robots: dict, sitemap: dict, https: dict, speed: list, h
                      why="A welcome headline says nothing about the customer or the problem you solve.",
                      fix="Rewrite it as: who you help + the result + how. Lead with the customer, not your name."))
     else:
-        out.append(F(id="C-h1-generic", area="C", title="Headline is not a generic welcome", status="pass",
+        out.append(F(id="C-h1-generic", area="C", title="Your headline is specific, not a generic welcome", status="pass",
                      evidence=f'H1: "{h1s[0][:120]}"'))
     if len(h1s) > 1:
         out.append(F(id="E-h1-multiple", area="E", title=f"{len(h1s)} H1 headings on the home page", status="warn",
@@ -47,7 +47,7 @@ def run_rules(f: Facts, robots: dict, sitemap: dict, https: dict, speed: list, h
     else:
         n = len(f.title)
         st = "pass" if 30 <= n <= 65 else "warn"
-        out.append(F(id="O-title-length", area="O", title="Title tag length", status=st, severity="medium",
+        out.append(F(id="O-title-length", area="O", title="Your page title is a good length" if st == "pass" else "Page title is too short or too long", status=st, severity="medium",
                      evidence=f'"{f.title[:110]}" ({n} characters)',
                      why="Titles that are too short waste space; too long get cut off in results.",
                      fix="Aim for roughly 50-60 characters, main service first."))
@@ -126,13 +126,13 @@ def run_rules(f: Facts, robots: dict, sitemap: dict, https: dict, speed: list, h
                      evidence="Disallow: / for all crawlers.", why="Google cannot crawl your pages.",
                      fix="Remove the blanket Disallow unless the site is meant to be private."))
     else:
-        out.append(F(id="E-robots", area="E", title="robots.txt found", status="pass", evidence="/robots.txt OK."))
+        out.append(F(id="E-robots", area="E", title="Search engines can read your robots.txt", status="pass", evidence="/robots.txt OK."))
     if not sitemap["found"]:
         out.append(F(id="E-sitemap", area="E", title="No XML sitemap found", status="fail", severity="medium",
                      evidence="Checked robots.txt, /sitemap.xml, /sitemap_index.xml, /wp-sitemap.xml.",
                      why="A sitemap helps Google find and index every page.", fix="Generate and submit a sitemap."))
     else:
-        out.append(F(id="E-sitemap", area="E", title="XML sitemap found", status="pass",
+        out.append(F(id="E-sitemap", area="E", title="You have an XML sitemap for Google", status="pass",
                      evidence=f"{sitemap['url']} ({sitemap['urls']} entries)"))
         if not sitemap.get("in_robots"):
             out.append(F(id="E-sitemap-robots", area="E", title="Sitemap is not listed in robots.txt", status="warn",
@@ -193,4 +193,43 @@ def run_rules(f: Facts, robots: dict, sitemap: dict, https: dict, speed: list, h
                      status="pass" if f.has_map_or_gbp else "warn", severity="low",
                      evidence="Map link/embed found." if f.has_map_or_gbp else "No Google Maps link or embed found.",
                      why="Ties the site to your Google Business Profile.", fix="Embed your map and link your profile."))
+    return out
+
+
+def run_strengths(f: Facts, https: dict, speed: list) -> list:
+    """What the site does well. Shown to the visitor, because a fair audit tells both stories."""
+    def ok(id, area, title, evidence):
+        return Finding(id=id, area=area, title=title, status="pass", evidence=evidence)
+    out = []
+    h1s = [t for l, t in f.headings if l == 1]
+    if https["https_final"]:
+        out.append(ok("ok-https", "E", "Your site loads securely (HTTPS)", "http:// redirects to https://"))
+    if f.viewport:
+        out.append(ok("ok-mobile", "R", "Set up for mobile screens", "Viewport tag present."))
+    if f.meta_desc and 70 <= len(f.meta_desc) <= 170:
+        out.append(ok("ok-meta", "O", "Your meta description is a good length", f'"{f.meta_desc[:110]}"'))
+    if len(h1s) == 1:
+        out.append(ok("ok-h1", "E", "One clear main headline (H1) on the home page", f'"{h1s[0][:100]}"'))
+    if [c for c in f.ctas if c[2] <= 12] or f.tel_links:
+        label = f.ctas[0][0] if f.ctas else f.tel_links[0]
+        out.append(ok("ok-cta", "R", "A call to action is easy to find near the top", f'"{label}"'))
+    if f.forms or f.tel_links or f.mailto_links:
+        out.append(ok("ok-contact", "R", "Visitors have a way to reach you", "Form, phone or email link found."))
+    if f.canonical:
+        out.append(ok("ok-canonical", "E", "Canonical tag set (avoids duplicate-page confusion)", f.canonical[:100]))
+    if f.schema_types:
+        out.append(ok("ok-schema", "E", "Structured data helps Google understand the business",
+                      ", ".join(dict.fromkeys(f.schema_types))[:100]))
+    if f.analytics:
+        out.append(ok("ok-tracking", "E", "Tracking is installed, so you can measure results", ", ".join(f.analytics)))
+    if f.social_links:
+        out.append(ok("ok-social", "E", "Social profiles are linked from the site", f"{len(f.social_links)} profile link(s)"))
+    if f.og.get("og:title") and f.og.get("og:image"):
+        out.append(ok("ok-og", "E", "Links shared on social look good (preview image set)", f.og.get("og:title", "")[:80]))
+    if f.word_count >= 400:
+        out.append(ok("ok-copy", "O", "The home page has enough copy to explain the offer", f"{f.word_count} words"))
+    for s in speed:
+        if s.get("score") and s["score"] >= 90:
+            out.append(ok(f"ok-speed-{s['strategy']}", "E", f"Fast on {s['strategy']} ({s['score']}/100)",
+                          f"Main content shown in {(s.get('lcp_ms') or 0)/1000:.1f}s"))
     return out

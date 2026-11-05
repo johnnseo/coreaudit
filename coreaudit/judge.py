@@ -5,7 +5,7 @@ import re
 
 from .models import Finding
 
-MODEL = os.getenv("COREAUDIT_MODEL", "claude-sonnet-5-5")
+MODELS = [m for m in (os.getenv("COREAUDIT_MODEL"), "claude-sonnet-5-5", "claude-sonnet-4-5") if m]
 
 RUBRIC = """You audit a small business website for a marketing consultant. Judge ONLY the text provided.
 Score by C.O.R.E.:
@@ -15,7 +15,7 @@ R (Route): Is the next step obvious and low-friction?
 Return JSON only: {"findings":[{"area":"C|O|R","title":"short","status":"fail|warn|pass",
 "severity":"high|medium|low","quote":"EXACT words copied from the text, max 25 words","why":"one sentence","fix":"one sentence"}]}
 Rules: every finding MUST include a verbatim quote from the text. If you cannot quote it, do not report it.
-Return at most 5 findings. Do not invent facts. Plain, direct language, no jargon."""
+Return at most 6 findings, and include 2 genuine strengths (status "pass") when the copy earns them: say what they do well, with a quote. Do not invent facts. Plain, direct language, no jargon."""
 
 
 def _norm(s):
@@ -34,8 +34,16 @@ def run(text: str, url: str):
     try:
         import anthropic
         client = anthropic.Anthropic(api_key=key)
-        msg = client.messages.create(model=MODEL, max_tokens=1500, system=RUBRIC,
-                                     messages=[{"role": "user", "content": f"URL: {url}\n\nPAGE TEXT:\n{text[:9000]}"}])
+        msg, last = None, None
+        for m in MODELS:
+            try:
+                msg = client.messages.create(model=m, max_tokens=1500, system=RUBRIC,
+                                             messages=[{"role": "user", "content": f"URL: {url}\n\nPAGE TEXT:\n{text[:9000]}"}])
+                break
+            except Exception as e:
+                last = e
+        if msg is None:
+            raise last
         raw = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
         data = json.loads(raw[raw.index("{"): raw.rindex("}") + 1])
         good = verify(data.get("findings", []), text)

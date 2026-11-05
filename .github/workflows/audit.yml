@@ -4,16 +4,29 @@ on:
   workflow_dispatch:
     inputs:
       urls:
-        description: "Website(s) to audit, comma separated (e.g. btigroup.com,cirrusmktgroup.com)"
+        description: "Website(s) to audit, comma separated (e.g. athanmarketing.com)"
         required: true
+        default: "athanmarketing.com"
+      pages:
+        description: "Max pages to crawl"
+        default: "25"
       no_ai:
-        description: "Skip the AI judge (cheaper)"
+        description: "Skip the AI judge"
+        type: boolean
+        default: false
+      no_keywords:
+        description: "Skip keyword data (no DataForSEO cost)"
         type: boolean
         default: false
 
 jobs:
   audit:
     runs-on: ubuntu-latest
+    env:
+      PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
+      DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -22,19 +35,23 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - run: python -m pytest -q
+      - name: Check keys
+        run: python -m coreaudit.doctor
       - name: Run audits
         env:
-          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           URLS: ${{ inputs.urls }}
+          PAGES: ${{ inputs.pages }}
           NO_AI: ${{ inputs.no_ai }}
+          NO_KW: ${{ inputs.no_keywords }}
         run: |
           mkdir -p out
           IFS=',' read -ra LIST <<< "$URLS"
           for u in "${LIST[@]}"; do
             u="$(echo "$u" | xargs)"
             name="$(echo "$u" | sed -E 's#https?://##; s#[^A-Za-z0-9]+#-#g')"
-            flags=""; [ "$NO_AI" = "true" ] && flags="--no-ai"
+            flags="--pages $PAGES"
+            [ "$NO_AI" = "true" ] && flags="$flags --no-ai"
+            [ "$NO_KW" = "true" ] && flags="$flags --no-keywords"
             python -m coreaudit --url "$u" --out "out/$name.json" $flags | tee -a out/summary.txt
           done
       - uses: actions/upload-artifact@v4
