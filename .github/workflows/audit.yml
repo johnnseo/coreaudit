@@ -1,0 +1,43 @@
+name: C.O.R.E. Audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: "Website(s) to audit, comma separated (e.g. btigroup.com,cirrusmktgroup.com)"
+        required: true
+      no_ai:
+        description: "Skip the AI judge (cheaper)"
+        type: boolean
+        default: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m pytest -q
+      - name: Run audits
+        env:
+          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          URLS: ${{ inputs.urls }}
+          NO_AI: ${{ inputs.no_ai }}
+        run: |
+          mkdir -p out
+          IFS=',' read -ra LIST <<< "$URLS"
+          for u in "${LIST[@]}"; do
+            u="$(echo "$u" | xargs)"
+            name="$(echo "$u" | sed -E 's#https?://##; s#[^A-Za-z0-9]+#-#g')"
+            flags=""; [ "$NO_AI" = "true" ] && flags="--no-ai"
+            python -m coreaudit --url "$u" --out "out/$name.json" $flags | tee -a out/summary.txt
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-audit-results
+          path: out/
