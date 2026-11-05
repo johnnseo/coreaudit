@@ -6,6 +6,7 @@ from html import escape as e
 from urllib.parse import urlparse
 
 from .pagespeed import rate
+from .questions import QUESTIONS
 
 NAMES = {"C": "Client", "O": "Offer", "R": "Route", "E": "Engine"}
 ASKS = {"C": "Is it clear who you help and what problem you solve?",
@@ -73,6 +74,31 @@ def speed_section(res) -> str:
             "and whether you pass Google's Core Web Vitals.</p>" + note + f"<div class=cols>{''.join(cols)}</div>")
 
 
+def questions_section(res) -> str:
+    fix = res["scores"]["fix_first"]
+    out = ["<h2>Before you book: tell us what you want</h2><p class=sub>Four quick questions so the call is about your goals.</p>"
+           "<form id=goals class=q>"]
+    for q in QUESTIONS:
+        out.append(f"<fieldset><legend>{e(q['label'])}</legend>")
+        if q["type"] == "text":
+            out.append(f"<textarea name={q['id']} maxlength=400 rows=3></textarea>")
+        else:
+            kind = "checkbox" if q["type"] == "multi" else "radio"
+            for val, lab in q["options"]:
+                chk = " checked" if q["id"] == "weakest" and val == fix else ""
+                out.append(f"<label><input type={kind} name={q['id']} value='{e(val)}'{chk}> {e(lab)}</label>")
+        out.append("</fieldset>")
+    out.append(f"<button type=submit class=btn>Continue</button></form>"
+               f"<div id=book hidden><a class=btn href='{e(BOOK)}'>Book a free review call</a></div>"
+               "<script>(function(){var f=document.getElementById('goals');f.addEventListener('submit',function(ev){"
+               "ev.preventDefault();var a={goals:[],weakest:'',help:'',challenge:''};"
+               "new FormData(f).forEach(function(v,k){if(k==='goals')a.goals.push(v);else a[k]=v;});"
+               "if(window.CORE_ENDPOINT){try{fetch(window.CORE_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},"
+               "body:JSON.stringify({answers:a})});}catch(e){}}"
+               "f.hidden=true;document.getElementById('book').hidden=false;});})();</script>")
+    return "".join(out)
+
+
 def _card(f, good=False):
     cls = "good" if good else f["status"]
     icon = {"good": "&#10003;", "fail": "&#10005;", "warn": "!"}.get(cls, "!")
@@ -128,9 +154,8 @@ def to_html(res: dict) -> str:
                        f"<td>{e((p['h1'] or [''])[0][:60]) or '<i>missing</i>'}</td></tr>" for p in pages)
         h.append(f"<details><summary>Page titles and headlines we checked ({res['crawl']['pages_crawled']} pages)</summary>"
                  f"<table><tr><th>Page</th><th>Title</th><th>Main headline</th></tr>{rows}</table></details>")
-    h.append(f"<div class=cta><h2>Want help fixing this?</h2><p>This check shows what is visible from the outside. "
-             f"A strategy session goes deeper: your traffic, your search data and a plan in the right order.</p>"
-             f"<a href='{e(BOOK)}'>Book a free review call</a></div>")
+    h.append("<div class=cta>" + questions_section(res) + "<p class=small>This check shows what is visible from the outside. "
+             "A strategy session goes deeper: your traffic, your search data and a plan in the right order.</p></div>")
     css = ("body{font:16px/1.55 system-ui,sans-serif;max-width:760px;margin:0 auto;padding:1.5rem 16px;color:#1c2330;background:#fff}"
            "h1{margin:0}h2{margin:2rem 0 .5rem}.sub{color:#5b6573;margin:.2rem 0 1rem}"
            ".hero{display:flex;gap:1.2rem;align-items:center;background:#f4f6f9;border-radius:14px;padding:1rem 1.2rem}"
@@ -142,6 +167,10 @@ def to_html(res: dict) -> str:
            ".f.fail{border-color:#e03131}.f.good{border-color:#2f9e44}.f p{margin:.3rem 0}.ev{color:#5b6573;font-size:.92rem}"
            "table{width:100%;border-collapse:collapse;font-size:.92rem}td,th{text-align:left;padding:.4rem;border-bottom:1px solid #e3e7ee}"
            ".cta{margin-top:2rem;background:#1c2330;color:#fff;border-radius:14px;padding:1rem 1.4rem}"
+           ".q fieldset{border:0;padding:0;margin:0 0 1rem}.q legend{font-weight:700;margin-bottom:.4rem}"
+           ".q label{display:block;padding:.35rem 0}.q textarea{width:100%;border-radius:10px;border:0;padding:.6rem;font:inherit;box-sizing:border-box}"
+           ".cta .sub{color:#c6cdd8}.small{font-size:.85rem;color:#c6cdd8;margin-top:1rem}button.btn{border:0;cursor:pointer;font:inherit}"
+           ".btn{display:inline-block;background:#e8590c;color:#fff;padding:.7rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:700}"
            ".cta a{display:inline-block;background:#e8590c;color:#fff;padding:.7rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:700}"
            ".chips{margin:1rem 0 0}.chip{display:inline-block;font-size:.8rem;font-weight:700;padding:.15rem .6rem;border-radius:99px;color:#fff}"
            ".chip.g{background:#2f9e44}.chip.a{background:#e67700}.chip.r{background:#e03131}"

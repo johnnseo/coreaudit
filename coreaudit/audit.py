@@ -1,17 +1,18 @@
 """Run one audit end to end."""
 import argparse
+import re
 import json
 import sys
 import time
 
-from . import checks, crawler, judge, keywords, pagespeed, site_checks, technical
+from . import checks, crawler, gbp, judge, keywords, pagespeed, site_checks, technical
 from .fetch import fetch
 from .parse import parse
 from .safety import UnsafeURL, normalize_url
 from .scoring import route_lead, score
 
 
-def run_audit(raw_url: str, use_speed=True, use_ai=True, use_keywords=True, max_pages=25) -> dict:
+def run_audit(raw_url: str, use_speed=True, use_ai=True, use_keywords=True, max_pages=25, local=None, city="") -> dict:
     t0 = time.time()
     url = normalize_url(raw_url)
     page = fetch(url)
@@ -26,6 +27,13 @@ def run_audit(raw_url: str, use_speed=True, use_ai=True, use_keywords=True, max_
     findings += checks.run_strengths(facts, https, speed)
     crawl = crawler.crawl(page.final_url, robots.get("text", ""), max_pages=max_pages)
     findings += site_checks.crawl_findings(crawl)
+    g = {"ok": False, "skipped": True}
+    is_local = local if local is not None else (facts.is_local or bool(facts.zips and (facts.phones or facts.tel_links)))
+    if is_local:
+        from urllib.parse import urlparse as _u
+        name = facts.business_name or re.split(r"\s[|\-–—]\s", facts.title)[0]
+        g = gbp.lookup(name, city or facts.schema_city, _u(page.final_url).hostname)
+        findings += gbp.findings(g, (facts.tel_links or facts.phones or [facts.schema_phone])[0] if (facts.tel_links or facts.phones or facts.schema_phone) else "")
     kw = {"ok": False, "skipped": True}
     if use_keywords:
         from urllib.parse import urlparse
@@ -51,7 +59,7 @@ def run_audit(raw_url: str, use_speed=True, use_ai=True, use_keywords=True, max_
     findings.sort(key=lambda f: (order[f.status], sev[f.severity]))
     return {"url": page.final_url, "ok": True, "seconds": round(time.time() - t0, 1),
             "scores": scores, "lead_route": route_lead(scores, findings),
-            "ai_judge": ai_note, "speed": speed, "keywords": kw,
+            "ai_judge": ai_note, "speed": speed, "keywords": kw, "gbp": g, "is_local": bool(is_local),
             "crawl": {"pages_crawled": crawl["pages_crawled"], "pages": list(crawl["pages"].values())},
             "findings": [f.to_dict() for f in findings],
             "facts": {"title": facts.title, "h1": [t for l, t in facts.headings if l == 1],
@@ -65,10 +73,12 @@ def main(argv=None):
     ap.add_argument("--no-speed", action="store_true")
     ap.add_argument("--no-ai", action="store_true")
     ap.add_argument("--no-keywords", action="store_true")
+    ap.add_argument("--local", action="store_true", help="force the Google Business Profile check")
+    ap.add_argument("--city", default="")
     ap.add_argument("--pages", type=int, default=25)
     a = ap.parse_args(argv)
     try:
-        res = run_audit(a.url, not a.no_speed, not a.no_ai, not a.no_keywords, a.pages)
+        res = run_audit(a.url, not a.no_speed, not a.no_ai, not a.no_keywords, a.pages, True if a.local else None, a.city)
     except UnsafeURL as e:
         print(f"Rejected: {e}")
         return 2

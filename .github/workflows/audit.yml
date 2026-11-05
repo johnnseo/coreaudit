@@ -10,6 +10,13 @@ on:
       pages:
         description: "Max pages to crawl"
         default: "25"
+      city:
+        description: "City (helps find the Google Business Profile). Optional"
+        default: ""
+      local:
+        description: "Force the Google Business Profile check"
+        type: boolean
+        default: false
       no_ai:
         description: "Skip the AI judge"
         type: boolean
@@ -43,16 +50,20 @@ jobs:
           PAGES: ${{ inputs.pages }}
           NO_AI: ${{ inputs.no_ai }}
           NO_KW: ${{ inputs.no_keywords }}
+          CITY: ${{ inputs.city }}
+          LOCAL: ${{ inputs.local }}
         run: |
           mkdir -p out
           IFS=',' read -ra LIST <<< "$URLS"
           for u in "${LIST[@]}"; do
             u="$(echo "$u" | xargs)"
             name="$(echo "$u" | sed -E 's#https?://##; s#[^A-Za-z0-9]+#-#g')"
-            flags="--pages $PAGES"
-            [ "$NO_AI" = "true" ] && flags="$flags --no-ai"
-            [ "$NO_KW" = "true" ] && flags="$flags --no-keywords"
-            python -m coreaudit --url "$u" --out "out/$name.json" $flags | tee -a out/summary.txt
+            flags=(--pages "$PAGES")
+            [ "$NO_AI" = "true" ] && flags+=(--no-ai)
+            [ "$NO_KW" = "true" ] && flags+=(--no-keywords)
+            [ "$LOCAL" = "true" ] && flags+=(--local)
+            [ -n "$CITY" ] && flags+=(--city "$CITY")
+            python -m coreaudit --url "$u" --out "out/$name.json" "${flags[@]}" | tee -a out/summary.txt
           done
       - uses: actions/upload-artifact@v4
         with:

@@ -18,13 +18,13 @@ def score(findings):
 
 
 def route_lead(scores, findings, answers=None):
-    """Simple routing: groups from the blueprint. Phase 0 rule of thumb, to be tuned on real audits."""
-    answers = answers or {}
+    """done_for_you | strategy_session | nurture. Answers (from the questions step) outweigh the score."""
+    a = answers or {}
     high = len([f for f in findings if f.status == "fail" and f.severity == "high"])
-    if answers.get("wants") == "done_for_you" or (high >= 4 and answers.get("is_business_owner")):
+    goals = set(a.get("goals") or [])
+    wants_results = bool(goals & {"leads", "conversions", "sales", "visibility"})
+    if a.get("help") == "dfy" and (wants_results or high >= 2):
         return "done_for_you"
-    if high >= 2:
+    if a.get("help") == "diy" or (wants_results and high >= 2) or high >= 4:
         return "strategy_session"
-    if scores["overall"] >= 80:
-        return "nurture"
     return "nurture"

@@ -48,6 +48,10 @@ class Facts:
     internal_links: list = field(default_factory=list)
     nav_links: list = field(default_factory=list)
     contact_links: list = field(default_factory=list)
+    business_name: str = ""
+    schema_phone: str = ""
+    schema_city: str = ""
+    is_local: bool = False
     word_count: int = 0
 
 
@@ -87,6 +91,31 @@ def parse(html: str, url: str) -> Facts:
             _types(data, f.schema_types)
         except Exception:
             pass
+
+    LOCAL = ("LocalBusiness", "Restaurant", "Dentist", "Physician", "LegalService", "Attorney", "RealEstateAgent",
+             "HomeAndConstructionBusiness", "Plumber", "Electrician", "FinancialService", "AccountingService",
+             "HealthAndBeautyBusiness", "MedicalBusiness", "ProfessionalService", "Store", "AutoRepair")
+
+    def walk(n):
+        if isinstance(n, dict):
+            t = n.get("@type")
+            t = t if isinstance(t, list) else [t]
+            if any(x in LOCAL for x in t if x) or n.get("address"):
+                f.business_name = f.business_name or str(n.get("name") or "")
+                f.schema_phone = f.schema_phone or str(n.get("telephone") or "")
+                addr = n.get("address")
+                if isinstance(addr, dict):
+                    f.schema_city = f.schema_city or str(addr.get("addressLocality") or "")
+                    if addr.get("streetAddress") or addr.get("addressLocality"):
+                        f.is_local = f.is_local or any(x in LOCAL for x in t if x)
+            for v in n.values():
+                walk(v)
+        elif isinstance(n, list):
+            for v in n:
+                walk(v)
+    for d in f.schema_raw:
+        walk(d)
+    f.business_name = f.business_name or f.og.get("og:site_name", "")
 
     html_low = html.lower()
     for name, needle in (("Google Analytics/GTM", "googletagmanager.com"), ("GA4", "gtag("),
