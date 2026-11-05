@@ -20,76 +20,109 @@ def _share(bad, total):
     return f"{len(bad)} of {total} pages"
 
 
+TITLE_MAX = 70      # characters; Google cuts by pixel width, ~60 is typical, 70 is clearly long
+META_MAX = 170
+
+
+def _t(p):
+    return f'{_path(p["url"])}: "{p["title"][:75]}" ({len(p["title"])} characters)'
+
+
 def crawl_findings(c: dict) -> list:
-    pages = list(c["pages"].values())
+    allp = list(c["pages"].values())
+    # Only grade real, indexable content pages. Archives (categories/tags), utility pages
+    # (contact, thank-you, legal) and noindex pages are not judged like landing pages.
+    pages = [p for p in allp if p.get("kind", "content") == "content" and not p["noindex"]]
+    archives = [p for p in allp if p.get("kind") == "archive"]
     n = len(pages)
     out = []
     if not n:
         return out
-    no_title = [p["url"] for p in pages if not p["title"]]
-    no_meta = [p["url"] for p in pages if not p["meta_desc"] and not p["noindex"]]
-    no_h1 = [p["url"] for p in pages if not p["h1"]]
-    multi_h1 = [p["url"] for p in pages if len(p["h1"]) > 1]
+    no_title = [p for p in pages if not p["title"]]
+    no_meta = [p for p in pages if not p["meta_desc"]]
+    no_h1 = [p for p in pages if not p["h1"]]
+    multi_h1 = [p for p in pages if len(p["h1"]) > 1]
     generic = [p for p in pages if p["h1"] and GENERIC_H.match(p["h1"][0])]
-    skips = [p["url"] for p in pages if any(b - a > 1 for a, b in zip(p["levels"], p["levels"][1:]))]
-    thin = [p["url"] for p in pages if p["word_count"] < 150 and not p["noindex"]]
-    long_t = [p["url"] for p in pages if len(p["title"]) > 65]
+    skips = [p for p in pages if any(b - a > 1 for a, b in zip(p["levels"], p["levels"][1:]))]
+    thin = [p for p in pages if p["word_count"] < 150]
+    long_t = [p for p in pages if len(p["title"]) > TITLE_MAX]
+    long_m = [p for p in pages if len(p["meta_desc"]) > META_MAX]
     titles = {}
     for p in pages:
         if p["title"]:
-            titles.setdefault(p["title"], []).append(p["url"])
-    dup_titles = {t: u for t, u in titles.items() if len(u) > 1}
+            titles.setdefault(p["title"].strip().lower(), []).append(p)
+    dup = {t: v for t, v in titles.items() if len(v) > 1}
+    U = lambda ps: [p["url"] for p in ps]
 
     def add(id, area, title, bad, sev, why, fix, evidence=None, status="fail"):
-        out.append(Finding(id=id, area=area, title=title, status=status, severity=sev,
-                           evidence=evidence or f"{_share(bad, n)}: {_ex(bad)}", why=why, fix=fix, source="crawl"))
+        out.append(Finding(id=id, area=area, title=title, status=status, severity=sev, source="crawl",
+                           evidence=evidence or f"{len(bad)} of {n} pages: {_ex(U(bad))}", why=why, fix=fix))
 
     if no_title:
-        add("O-pages-title", "O", f"{len(no_title)} page(s) have no title", no_title, "high",
-            "The title is the headline people see in Google.", "Give every page its own title with the topic and service.")
+        add("O-pages-title", "O", f"{len(no_title)} page(s) have no meta title", no_title, "high",
+            "The meta title is the blue headline people click in Google.",
+            "Give every page its own meta title with the topic and service.")
     if no_meta:
         add("O-pages-meta", "O", "Pages missing a meta description", no_meta, "medium",
-            "Google writes its own snippet, usually a poor one, so fewer people click.",
-            "Write 140-160 characters per page that promise the result.")
+            "Without one, Google writes its own snippet, usually a weak one, so fewer people click.",
+            "Write about 140-160 characters per page that promise the result.", status="warn")
     if no_h1:
-        add("E-pages-h1", "E", "Pages with no main headline (H1)", no_h1, "high",
-            "Google and visitors use the H1 to understand the page.", "One clear H1 per page that includes the main topic.")
+        add("E-pages-h1", "E", "Pages with no page headline (H1)", no_h1, "high",
+            "The H1 is the main on-page headline. Google and visitors use it to understand the page.",
+            "One clear H1 per page that includes the main topic.")
     if multi_h1:
-        add("E-pages-multih1", "E", "Pages with more than one H1", multi_h1, "medium",
+        add("E-pages-multih1", "E", "Pages with more than one H1", multi_h1, "low",
             "Several H1s blur what the page is about.", "Keep one H1; turn the others into H2s.", status="warn")
     if generic:
-        add("C-pages-generic", "C", "Headlines that say nothing ('Welcome', 'Home', 'About us')",
-            [p["url"] for p in generic], "high", "Generic headlines waste the most valuable line on the page.",
+        add("C-pages-generic", "C", "Page headlines (H1) that say nothing ('Welcome', 'Home', 'About us')", generic, "high",
+            "Generic headlines waste the most valuable line on the page.",
             "Name who you help and the result, not the page type.",
-            evidence="; ".join(f'"{p["h1"][0][:50]}" ({_path(p["url"])})' for p in generic[:3]))
+            evidence="; ".join(f'{_path(p["url"])}: "{p["h1"][0][:50]}"' for p in generic[:3]))
     if skips:
-        add("E-pages-skips", "E", "Headings out of order (levels skipped)", skips, "low",
-            "Usually means headings are used for looks, not structure.", "Use H1, then H2, then H3 in order.", status="warn")
-    if dup_titles:
-        t, u = next(iter(dup_titles.items()))
-        add("O-pages-duptitle", "O", "Several pages share the same title", [x for v in dup_titles.values() for x in v],
-            "medium", "Google cannot tell which page to show for a search.", "Give each page a unique title.",
-            evidence=f'"{t[:60]}" used on {len(u)} pages: {_ex(u)}', status="warn")
+        add("E-pages-skips", "E", "Headings out of order (H2 jumping to H4, for example)", skips, "low",
+            "Usually means headings are used for their look instead of the page structure.",
+            "Use H1, then H2, then H3 in order.", status="warn")
+    if dup:
+        shared = [x for v in dup.values() for x in v]
+        t = next(iter(dup.values()))
+        add("O-pages-duptitle", "O", "Different pages share the same meta title", shared, "medium",
+            "Google cannot tell which page to show for a search, and the pages compete with each other.",
+            "Give each page its own meta title.", status="warn",
+            evidence=f'"{t[0]["title"][:70]}" is used on {len(t)} different pages: {_ex(U(t))}')
     if long_t:
-        add("O-pages-longtitle", "O", "Titles too long, they get cut off in Google", long_t, "low",
-            "The end of the title (often the service) disappears.", "Keep titles around 50-60 characters.", status="warn")
+        add("O-pages-longtitle", "O", "Meta titles that may be cut off in Google", long_t, "low",
+            "Google shows roughly the first 60 characters, so the end of the title (often the service or city) can disappear.",
+            "Keep the meta title around 50-60 characters, most important words first.", status="warn",
+            evidence="; ".join(_t(p) for p in long_t[:2]) + (f" and {len(long_t) - 2} more" if len(long_t) > 2 else ""))
+    if long_m:
+        add("O-pages-longmeta", "O", "Meta descriptions that may be cut off in Google", long_m, "low",
+            "Long descriptions get trimmed mid-sentence.", "Keep them near 150-160 characters.", status="warn")
     if thin:
         add("O-pages-thin", "O", "Pages with very little text", thin, "low",
             "Short pages rarely rank or persuade.", "Say who it is for, what you do, proof and the next step.", status="warn")
     if c["broken"]:
         b = c["broken"]
-        add("E-broken", "E", f"{len(b)} broken internal link(s)", [x["url"] for x in b], "high" if len(b) > 5 else "medium",
-            "Visitors hit dead ends and Google loses trust in the site.", "Fix or redirect these pages.",
+        add("E-broken", "E", f"{len(b)} broken internal link(s)", b, "high" if len(b) > 5 else "medium",
+            "Visitors hit dead ends and Google loses trust in the site.", "Fix the link or redirect that address.",
             evidence="; ".join(f'{_path(x["url"])} ({x["status"]})' for x in b[:3]))
-    # strengths
+    soft = [p for p in archives if not p["noindex"] and p["word_count"] < 150]
+    if len(soft) >= 8:
+        add("E-archives", "E", f"{len(soft)} category/tag pages are open to Google with almost no content", soft, "low",
+            "Category and tag pages are fine for organising a site, but thin ones add little value and can dilute your focus.",
+            "Keep the categories you want to rank for and give them an intro and a unique title. Set the rest "
+            "(especially tags and author pages) to noindex.", status="warn",
+            evidence=f"{len(soft)} archive pages, for example {_ex(U(soft))}")
+
     def ok(id, area, title, evidence):
         out.append(Finding(id=id, area=area, title=title, status="pass", evidence=evidence, source="crawl"))
     if not no_title and not no_meta:
-        ok("ok-pages-meta", "O", "Every page checked has a title and meta description", f"{n} pages checked")
+        ok("ok-pages-meta", "O", "Every page checked has a meta title and meta description", f"{n} pages checked")
     elif not no_title:
-        ok("ok-pages-title", "O", "Every page checked has a title", f"{n} pages checked")
+        ok("ok-pages-title", "O", "Every page checked has a meta title", f"{n} pages checked")
     if not no_h1 and not multi_h1 and not generic:
         ok("ok-pages-h1", "E", "Clean headline structure: one clear H1 per page", f"{n} pages checked")
+    if not dup:
+        ok("ok-pages-unique", "O", "Every page has its own meta title", f"{n} pages checked")
     if not c["broken"]:
         ok("ok-broken", "E", "No broken internal links found", f"{n} pages checked")
     return out

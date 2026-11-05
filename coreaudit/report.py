@@ -5,6 +5,8 @@ import os
 from html import escape as e
 from urllib.parse import urlparse
 
+from .pagespeed import rate
+
 NAMES = {"C": "Client", "O": "Offer", "R": "Route", "E": "Engine"}
 ASKS = {"C": "Is it clear who you help and what problem you solve?",
         "O": "Is what you sell specific, and does Google understand it?",
@@ -27,9 +29,54 @@ def meta_csv(res) -> str:
     return buf.getvalue()
 
 
+CHIP = {"good": ("Good", "g"), "ok": ("Needs work", "a"), "poor": ("Poor", "r")}
+METRICS = [("lcp_ms", "Main content appears (LCP)", lambda v: f"{v/1000:.1f} s", "Should be 2.5 s or less"),
+           ("cls", "Page stays steady (CLS)", lambda v: f"{v:.2f}", "Should be 0.1 or less"),
+           ("tbt_ms", "Responds to taps (blocking time)", lambda v: f"{v:.0f} ms", "Should be 200 ms or less"),
+           ("fcp_ms", "First content appears (FCP)", lambda v: f"{v/1000:.1f} s", "Should be 1.8 s or less")]
+
+
+def _chip(metric, v):
+    r = rate(metric, v)
+    if not r:
+        return ""
+    t, c = CHIP[r]
+    return f"<span class='chip {c}'>{t}</span>"
+
+
+def speed_section(res) -> str:
+    sp = {s["strategy"]: s for s in res.get("speed", [])}
+    if not sp or all(s.get("score") is None for s in sp.values()):
+        err = next((s.get("error") for s in sp.values() if s.get("error")), "")
+        return ("<h2>Speed and Core Web Vitals</h2><div class='f warn'><b>We could not measure speed this time</b>"
+                f"<p class=ev>{e(err or 'Speed test was not run.')}</p><p>Run the check again in a minute.</p></div>")
+    cols = []
+    for k, name in (("mobile", "Mobile"), ("desktop", "Desktop")):
+        s = sp.get(k) or {}
+        if s.get("score") is None:
+            cols.append(f"<div class=sp><h3>{name}</h3><p class=ev>Not measured: {e(s.get('error', ''))}</p></div>")
+            continue
+        sc = s["score"]
+        c = "g" if sc >= 90 else "a" if sc >= 50 else "r"
+        rows = "".join(f"<tr><td>{lab}<br><small>{hint}</small></td><td>{fmt(s[m]) if s.get(m) is not None else '-'}</td>"
+                       f"<td>{_chip(m, s.get(m))}</td></tr>" for m, lab, fmt, hint in METRICS)
+        cols.append(f"<div class=sp><h3>{name}</h3><div class='score {c}'>{sc}<small>/100</small></div>"
+                    f"<table>{rows}</table></div>")
+    fld = (sp.get("mobile") or {}).get("field")
+    note = ""
+    if fld and fld.get("verdict"):
+        word = {"FAST": "passing", "AVERAGE": "needs improvement", "SLOW": "failing"}.get(fld["verdict"], fld["verdict"].lower())
+        note = (f"<p class=sub>Real Chrome visitors over the last 28 days: Core Web Vitals are <b>{word}</b>.</p>")
+    else:
+        note = "<p class=sub>Google does not have enough real-visitor data for this site, so these are lab measurements.</p>"
+    return ("<h2>Speed and Core Web Vitals</h2><p class=sub>Speed affects how visitors feel on your site, how many act, "
+            "and whether you pass Google's Core Web Vitals.</p>" + note + f"<div class=cols>{''.join(cols)}</div>")
+
+
 def _card(f, good=False):
     cls = "good" if good else f["status"]
-    parts = [f"<div class='f {cls}'><b>{e(f['title'])}</b>"]
+    icon = {"good": "&#10003;", "fail": "&#10005;", "warn": "!"}.get(cls, "!")
+    parts = [f"<div class='f {cls}'><b><span class=ic>{icon}</span>{e(f['title'])}</b>"]
     if f.get("evidence"):
         parts.append(f"<p class=ev>{'Found' if not good else 'Example'}: {e(f['evidence'])}</p>")
     if not good:
@@ -57,6 +104,10 @@ def to_html(res: dict) -> str:
         h.append(f"<div class=area><b>{NAMES[c]}</b><div class=bar><i style='width:{sc}%'></i></div>"
                  f"<span>{sc}/100 &middot; {label(sc)}</span></div>")
     h.append("</div>")
+    h.append(f"<p class=chips><span class='chip g'>{len(good)} working</span> "
+             f"<span class='chip a'>{len([f for f in bad if f['status']=='warn'])} to improve</span> "
+             f"<span class='chip r'>{len([f for f in bad if f['status']=='fail'])} to fix</span></p>")
+    h.append(speed_section(res))
     if good:
         h.append(f"<h2>What you are doing well</h2>" + "".join(_card(f, True) for f in good[:8]))
     if top:
@@ -92,7 +143,14 @@ def to_html(res: dict) -> str:
            "table{width:100%;border-collapse:collapse;font-size:.92rem}td,th{text-align:left;padding:.4rem;border-bottom:1px solid #e3e7ee}"
            ".cta{margin-top:2rem;background:#1c2330;color:#fff;border-radius:14px;padding:1rem 1.4rem}"
            ".cta a{display:inline-block;background:#e8590c;color:#fff;padding:.7rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:700}"
-           "@media(prefers-color-scheme:dark){body{background:#12161d;color:#e8ecf2}.hero,.area{background:#1c222c}.f{background:#181d26}"
+           ".chips{margin:1rem 0 0}.chip{display:inline-block;font-size:.8rem;font-weight:700;padding:.15rem .6rem;border-radius:99px;color:#fff}"
+           ".chip.g{background:#2f9e44}.chip.a{background:#e67700}.chip.r{background:#e03131}"
+           ".ic{display:inline-block;width:1.4rem;height:1.4rem;line-height:1.4rem;text-align:center;border-radius:50%;color:#fff;margin-right:.5rem;font-size:.8rem;background:#f59f00}"
+           ".good .ic{background:#2f9e44}.fail .ic{background:#e03131}"
+           ".cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}.sp{background:#f4f6f9;border-radius:14px;padding:1rem}"
+           ".sp h3{margin:0 0 .4rem}.score{font-size:2.6rem;font-weight:800;line-height:1}.score small{font-size:1rem;opacity:.6}"
+           ".score.g{color:#2f9e44}.score.a{color:#e67700}.score.r{color:#e03131}.sp small{color:#5b6573}"
+           "@media(prefers-color-scheme:dark){body{background:#12161d;color:#e8ecf2}.hero,.area,.sp{background:#1c222c}.f{background:#181d26}"
            ".sub,.ev,.area span,.big small{color:#9aa5b5}td,th{border-color:#2a3240}}")
     return ("<!doctype html><html lang=en><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
             f"<title>Website health check</title><style>{css}</style><body>" + "".join(h) + "</body></html>")

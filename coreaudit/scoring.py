@@ -9,7 +9,7 @@ def score(findings):
     for code, name in AREAS.items():
         items = [f for f in findings if f.area == code]
         loss = sum(SEVERITY_WEIGHT[f.severity] * PENALTY[f.status] * 6 for f in items)
-        res[code] = {"name": name, "score": max(0, round(100 - loss)),
+        res[code] = {"name": name, "score": round(100 / (1 + loss / 45)),
                      "issues": len([f for f in items if f.status in ("fail", "warn")])}
     res["overall"] = round(sum(res[c]["score"] for c in AREAS) / 4)
     weakest = min(AREAS, key=lambda c: res[c]["score"])

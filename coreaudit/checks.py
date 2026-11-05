@@ -15,12 +15,12 @@ def run_rules(f: Facts, robots: dict, sitemap: dict, https: dict, speed: list, h
 
     # ---------- CLIENT: who is this for, in whose words ----------
     if not h1s:
-        out.append(F(id="C-h1-missing", area="C", title="No main headline (H1) on the home page", status="fail",
+        out.append(F(id="C-h1-missing", area="C", title="No page headline (H1) on the home page", status="fail",
                      severity="high", evidence="No <h1> found.",
                      why="Visitors and Google both use the H1 to learn who the page is for and what it offers.",
                      fix="Add one H1 that names who you help and the result you deliver."))
     elif GENERIC_H.match(h1s[0]):
-        out.append(F(id="C-h1-generic", area="C", title="Headline is generic ('Welcome to...')", status="fail",
+        out.append(F(id="C-h1-generic", area="C", title="Page headline (H1) is generic ('Welcome to...')", status="fail",
                      severity="high", evidence=f'H1: "{h1s[0][:120]}"',
                      why="A welcome headline says nothing about the customer or the problem you solve.",
                      fix="Rewrite it as: who you help + the result + how. Lead with the customer, not your name."))
@@ -41,18 +41,18 @@ def run_rules(f: Facts, robots: dict, sitemap: dict, https: dict, speed: list, h
 
     # ---------- OFFER: is it clear, findable, specific ----------
     if not f.title:
-        out.append(F(id="O-title-missing", area="O", title="No title tag", status="fail", severity="high",
+        out.append(F(id="O-title-missing", area="O", title="No meta title (the headline Google shows)", status="fail", severity="high",
                      evidence="No <title>.", why="The title is the clickable headline in Google results.",
                      fix="Write a title of 50-60 characters with your main service and location or audience."))
     else:
         n = len(f.title)
         st = "pass" if 30 <= n <= 65 else "warn"
-        out.append(F(id="O-title-length", area="O", title="Your page title is a good length" if st == "pass" else "Page title is too short or too long", status=st, severity="medium",
+        out.append(F(id="O-title-length", area="O", title="Your meta title (the Google headline) is a good length" if st == "pass" else "Your meta title is too short or too long", status=st, severity="medium",
                      evidence=f'"{f.title[:110]}" ({n} characters)',
                      why="Titles that are too short waste space; too long get cut off in results.",
                      fix="Aim for roughly 50-60 characters, main service first."))
     if not f.meta_desc:
-        out.append(F(id="O-meta-missing", area="O", title="No meta description", status="fail", severity="medium",
+        out.append(F(id="O-meta-missing", area="O", title="No meta description (the text under your Google headline)", status="fail", severity="medium",
                      evidence="No meta description.", why="Google writes its own snippet, often a poor one.",
                      fix="Write 140-160 characters that promise the result and invite the click."))
     if h1s and f.title:
@@ -103,9 +103,9 @@ def run_rules(f: Facts, robots: dict, sitemap: dict, https: dict, speed: list, h
                      severity="medium", evidence=f"{len(labels)} different action labels, e.g. " +
                      ", ".join(f'"{l}"' for l in list(labels)[:4]),
                      why="Too many choices lower conversions.", fix="Pick one primary action and one secondary."))
-    if not f.phones and not f.tel_links and not f.mailto_links and not f.forms:
-        out.append(F(id="R-contact-none", area="R", title="No way to contact you on the home page", status="fail",
-                     severity="high", evidence="No phone, email or form detected.",
+    if not f.phones and not f.tel_links and not f.mailto_links and not f.forms and not f.contact_links:
+        out.append(F(id="R-contact-none", area="R", title="No visible way to contact you from the home page", status="fail",
+                     severity="high", evidence="No phone, email, form, or link to a contact/booking page was found.",
                      why="Reachability is the minimum for lead generation.", fix="Add a phone, email or form."))
     elif f.phones and not f.tel_links:
         out.append(F(id="R-tel-link", area="R", title="Phone number is not tap-to-call", status="warn", severity="low",
@@ -150,19 +150,42 @@ def run_rules(f: Facts, robots: dict, sitemap: dict, https: dict, speed: list, h
         out.append(F(id="E-https", area="E", title="Site does not force HTTPS", status="fail", severity="high",
                      evidence="http:// version does not redirect to https://.", why="Browsers warn visitors; Google prefers HTTPS.",
                      fix="Install an SSL certificate and redirect all http to https."))
+    from .pagespeed import rate
     for s in speed:
         if s.get("score") is None:
             continue
-        sc = s["score"]
+        sc, strat = s["score"], s["strategy"]
         st = "pass" if sc >= 90 else ("warn" if sc >= 50 else "fail")
-        lcp = (s.get("lcp_ms") or 0) / 1000
-        out.append(F(id=f"E-speed-{s['strategy']}", area="E", title=f"Speed on {s['strategy']}: {sc}/100", status=st,
-                     severity="high" if sc < 50 else "medium", source="google",
-                     evidence=f"Score {sc}/100, largest content shown in {lcp:.1f}s.",
-                     why="Slow pages lose visitors and rank lower.", fix="Compress images, reduce plugins and scripts, use caching."))
+        if st != "pass":
+            out.append(F(id=f"E-speed-{strat}", area="E", title=f"Page speed on {strat}: {sc}/100", status=st,
+                         severity="high" if sc < 50 else "medium", source="google",
+                         evidence=f"Google speed score {sc}/100 on {strat}.",
+                         why="Slow pages lose visitors, convert less and can fail Google's Core Web Vitals.",
+                         fix="Compress and resize images, remove unused plugins and scripts, add caching and a CDN."))
+        details = [("lcp_ms", "Largest Contentful Paint (LCP)", "the main content takes too long to appear",
+                    "Compress and preload the hero image, speed up the server.", lambda v: f"{v/1000:.1f}s"),
+                   ("cls", "Layout shift (CLS)", "the page jumps around while loading",
+                    "Set width and height on images, embeds and banners.", lambda v: f"{v:.2f}"),
+                   ("tbt_ms", "Responsiveness (blocking time)", "scripts freeze the page, so taps and clicks lag",
+                    "Remove or delay heavy scripts and plugins.", lambda v: f"{v:.0f} ms")]
+        for key, name, why, fix, fmt in details:
+            v = s.get(key)
+            r = rate(key, v)
+            if r in ("ok", "poor") and strat == "mobile":
+                out.append(F(id=f"E-cwv-{key}", area="E", title=f"{name} needs work on mobile",
+                             status="fail" if r == "poor" else "warn", severity="high" if r == "poor" else "medium",
+                             source="google", evidence=f"{fmt(v)} measured in Google's test.",
+                             why=f"Core Web Vitals signal: {why}.", fix=fix))
+    fld = next((s.get("field") for s in speed if s.get("strategy") == "mobile" and s.get("field")), None)
+    if fld and fld.get("verdict") == "SLOW":
+        out.append(F(id="E-cwv-field", area="E", title="Real visitors have a slow experience (Core Web Vitals)",
+                     status="fail", severity="high", source="google",
+                     evidence="Google's data from real Chrome users rates this site as slow.",
+                     why="This is the data Google uses for the page experience signal.",
+                     fix="Fix the loading and layout issues listed in this report, starting with images."))
     if not f.analytics:
         out.append(F(id="E-tracking", area="E", title="No analytics tag detected", status="warn", severity="medium",
-                     evidence="No Google tag, GA4 or pixel found in the page source.",
+                     evidence="No Google tag, GA4 or pixel was detected in the page code (tracking set up another way would not show here).",
                      why="Without tracking you cannot see what converts.", fix="Install GA4 and conversion tracking."))
     if not f.schema_types:
         out.append(F(id="E-schema", area="E", title="No structured data (schema)", status="warn", severity="low",
@@ -213,8 +236,9 @@ def run_strengths(f: Facts, https: dict, speed: list) -> list:
     if [c for c in f.ctas if c[2] <= 12] or f.tel_links:
         label = f.ctas[0][0] if f.ctas else f.tel_links[0]
         out.append(ok("ok-cta", "R", "A call to action is easy to find near the top", f'"{label}"'))
-    if f.forms or f.tel_links or f.mailto_links:
-        out.append(ok("ok-contact", "R", "Visitors have a way to reach you", "Form, phone or email link found."))
+    if f.forms or f.tel_links or f.mailto_links or f.contact_links:
+        how = f.contact_links[0][0] if f.contact_links else "form, phone or email"
+        out.append(ok("ok-contact", "R", "Visitors have a clear way to reach you", f'"{how}"' if f.contact_links else how))
     if f.canonical:
         out.append(ok("ok-canonical", "E", "Canonical tag set (avoids duplicate-page confusion)", f.canonical[:100]))
     if f.schema_types:

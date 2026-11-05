@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 CTA_WORDS = re.compile(r"\b(book|call|contact|get (a |your )?(free |quote|started|estimate|audit)|schedule|"
                        r"request|start|buy|shop|sign ?up|subscribe|download|try|talk|apply|order|reserve|"
                        r"consult|demo|quote)\b", re.I)
+CONTACT_RE = re.compile(r"contact|consult|schedule|book|appointment|quote|get-in-touch|get in touch|reach us|talk to|free (call|review|audit)", re.I)
 WEAK_CTA = {"submit", "click here", "learn more", "read more", "send", "go", "more", "here"}
 PHONE_RE = re.compile(r"(\+?\d[\d\s().-]{8,}\d)")
 ZIP_RE = re.compile(r"\b\d{5}(?:-\d{4})?\b")
@@ -46,6 +47,7 @@ class Facts:
     analytics: list = field(default_factory=list)
     internal_links: list = field(default_factory=list)
     nav_links: list = field(default_factory=list)
+    contact_links: list = field(default_factory=list)
     word_count: int = 0
 
 
@@ -129,6 +131,8 @@ def parse(html: str, url: str) -> Facts:
                 f.social_links.append(full)
             elif h.replace("www.", "") == host.replace("www.", ""):
                 f.internal_links.append(full)
+                if CONTACT_RE.search(label) or CONTACT_RE.search(urlparse(full).path):
+                    f.contact_links.append((label, full))
         if label and len(label) < 60 and (CTA_WORDS.search(label) or label.lower() in WEAK_CTA):
             f.ctas.append((label, href, i))
             if label.lower() in WEAK_CTA:

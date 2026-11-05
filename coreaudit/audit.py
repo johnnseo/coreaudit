@@ -35,6 +35,16 @@ def run_audit(raw_url: str, use_speed=True, use_ai=True, use_keywords=True, max_
     if use_ai:
         ai, ai_note = judge.run(facts.text, page.final_url)
         findings += ai
+    js_heavy = facts.word_count < 60 and page.html.lower().count("<script") >= 5
+    if js_heavy:  # content built by JavaScript: we cannot judge copy/headings fairly from raw HTML
+        skip = {"C-h1-missing", "O-thin-home", "E-h2-missing", "R-cta-none", "R-contact-none", "C-h1-generic",
+                "O-title-length", "O-keyword-heading", "E-pages-h1", "O-pages-thin", "R-cta-late"}
+        findings = [f for f in findings if f.id not in skip]
+        from .models import Finding
+        findings.append(Finding(id="E-js-note", area="E", title="Your content loads through JavaScript", status="warn",
+                                severity="low", evidence=f"Only {facts.word_count} words visible in the page code.",
+                                why="Search engines and visitors on slow connections may see less than a browser shows.",
+                                fix="Make sure key copy and headings are in the page's HTML, not added later by scripts."))
     scores = score(findings)
     order = {"fail": 0, "warn": 1, "unknown": 2, "pass": 3}
     sev = {"high": 0, "medium": 1, "low": 2}
