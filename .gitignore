@@ -6,3 +6,4 @@ reports/*.json
 reports/*.html
 !reports/.gitkeep
 .pytest_cache/
+data/

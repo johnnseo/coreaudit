@@ -12,9 +12,11 @@ from .safety import UnsafeURL, normalize_url
 from .scoring import route_lead, score
 
 
-def run_audit(raw_url: str, use_speed=True, use_ai=True, use_keywords=True, max_pages=25, local=None, city="") -> dict:
+def run_audit(raw_url: str, use_speed=True, use_ai=True, use_keywords=True, max_pages=25, local=None, city="", progress=None) -> dict:
+    say = progress or (lambda stage: None)
     t0 = time.time()
     url = normalize_url(raw_url)
+    say("Reading your website")
     page = fetch(url)
     if page.status != 200 or not page.html:
         return {"url": url, "ok": False, "error": page.error or f"Site returned status {page.status}"}
@@ -22,25 +24,30 @@ def run_audit(raw_url: str, use_speed=True, use_ai=True, use_keywords=True, max_
     robots = technical.check_robots(page.final_url)
     sitemap = technical.check_sitemap(page.final_url, robots)
     https = technical.check_https(page.final_url)
+    say("Measuring speed on mobile and desktop")
     speed = [pagespeed.run(page.final_url, s) for s in ("mobile", "desktop")] if use_speed else []
     findings = checks.run_rules(facts, robots, sitemap, https, speed, page.status)
     findings += checks.run_strengths(facts, https, speed)
+    say("Checking your pages and headlines")
     crawl = crawler.crawl(page.final_url, robots.get("text", ""), max_pages=max_pages)
     findings += site_checks.crawl_findings(crawl)
     g = {"ok": False, "skipped": True}
     is_local = local if local is not None else (facts.is_local or bool(facts.zips and (facts.phones or facts.tel_links)))
     if is_local:
+        say("Looking up your Google Business Profile")
         from urllib.parse import urlparse as _u
         name = facts.business_name or re.split(r"\s[|\-–—]\s", facts.title)[0]
         g = gbp.lookup(name, city or facts.schema_city, _u(page.final_url).hostname)
         findings += gbp.findings(g, (facts.tel_links or facts.phones or [facts.schema_phone])[0] if (facts.tel_links or facts.phones or facts.schema_phone) else "")
     kw = {"ok": False, "skipped": True}
     if use_keywords:
+        say("Seeing how people find you on Google")
         from urllib.parse import urlparse
         kw = keywords.fetch(urlparse(page.final_url).hostname)
         findings += site_checks.keyword_findings(kw, facts, crawl["pages"])
     ai_note = "off"
     if use_ai:
+        say("Reading your copy like a visitor would")
         ai, ai_note = judge.run(facts.text, page.final_url)
         findings += ai
     js_heavy = facts.word_count < 60 and page.html.lower().count("<script") >= 5
@@ -53,6 +60,7 @@ def run_audit(raw_url: str, use_speed=True, use_ai=True, use_keywords=True, max_
                                 severity="low", evidence=f"Only {facts.word_count} words visible in the page code.",
                                 why="Search engines and visitors on slow connections may see less than a browser shows.",
                                 fix="Make sure key copy and headings are in the page's HTML, not added later by scripts."))
+    say("Writing your report")
     scores = score(findings)
     order = {"fail": 0, "warn": 1, "unknown": 2, "pass": 3}
     sev = {"high": 0, "medium": 1, "low": 2}

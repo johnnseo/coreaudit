@@ -1,5 +1,6 @@
 """Client-facing report: plain language, honest about what works and what does not."""
 import csv
+import json
 import io
 import os
 from html import escape as e
@@ -18,6 +19,11 @@ BOOK = os.getenv("REVIEW_URL", "https://calendar.app.google/xkJUcqHrNDSCYwNi8")
 
 def label(score):
     return "Strong" if score >= 85 else "Needs work" if score >= 60 else "Fix this first"
+
+
+HEIGHT_JS = ("<script>(function(){function p(){try{parent.postMessage({type:'core-audit-height',height:"
+             "document.documentElement.scrollHeight},'*')}catch(e){}}window.addEventListener('load',p);"
+             "if(window.ResizeObserver)new ResizeObserver(p).observe(document.body);})();</script>")
 
 
 def meta_csv(res) -> str:
@@ -74,7 +80,7 @@ def speed_section(res) -> str:
             "and whether you pass Google's Core Web Vitals.</p>" + note + f"<div class=cols>{''.join(cols)}</div>")
 
 
-def questions_section(res) -> str:
+def questions_section(res, endpoint="") -> str:
     fix = res["scores"]["fix_first"]
     out = ["<h2>Before you book: tell us what you want</h2><p class=sub>Four quick questions so the call is about your goals.</p>"
            "<form id=goals class=q>"]
@@ -93,8 +99,8 @@ def questions_section(res) -> str:
                "<script>(function(){var f=document.getElementById('goals');f.addEventListener('submit',function(ev){"
                "ev.preventDefault();var a={goals:[],weakest:'',help:'',challenge:''};"
                "new FormData(f).forEach(function(v,k){if(k==='goals')a.goals.push(v);else a[k]=v;});"
-               "if(window.CORE_ENDPOINT){try{fetch(window.CORE_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},"
-               "body:JSON.stringify({answers:a})});}catch(e){}}"
+               "var ep=" + json.dumps(endpoint) + ";if(ep){try{fetch(ep,{method:'POST',headers:{'Content-Type':'application/json'},"
+               "body:JSON.stringify(a)});}catch(e){}}"
                "f.hidden=true;document.getElementById('book').hidden=false;});})();</script>")
     return "".join(out)
 
@@ -113,7 +119,7 @@ def _card(f, good=False):
     return "".join(parts) + "</div>"
 
 
-def to_html(res: dict) -> str:
+def to_html(res: dict, endpoint: str = "", share_url: str = "") -> str:
     if not res.get("ok"):
         return f"<p>We could not check this site: {e(res.get('error', ''))}</p>"
     s, fs = res["scores"], res["findings"]
@@ -133,6 +139,9 @@ def to_html(res: dict) -> str:
     h.append(f"<p class=chips><span class='chip g'>{len(good)} working</span> "
              f"<span class='chip a'>{len([f for f in bad if f['status']=='warn'])} to improve</span> "
              f"<span class='chip r'>{len([f for f in bad if f['status']=='fail'])} to fix</span></p>")
+    if share_url:
+        h.append(f"<p class=small2>Your private report link (save it): <input id=lk readonly value='{e(share_url)}'> "
+                 "<button type=button onclick=\"var i=document.getElementById('lk');i.select();document.execCommand('copy');this.textContent='Copied'\">Copy</button></p>")
     h.append(speed_section(res))
     if good:
         h.append(f"<h2>What you are doing well</h2>" + "".join(_card(f, True) for f in good[:8]))
@@ -154,7 +163,7 @@ def to_html(res: dict) -> str:
                        f"<td>{e((p['h1'] or [''])[0][:60]) or '<i>missing</i>'}</td></tr>" for p in pages)
         h.append(f"<details><summary>Page titles and headlines we checked ({res['crawl']['pages_crawled']} pages)</summary>"
                  f"<table><tr><th>Page</th><th>Title</th><th>Main headline</th></tr>{rows}</table></details>")
-    h.append("<div class=cta>" + questions_section(res) + "<p class=small>This check shows what is visible from the outside. "
+    h.append("<div class=cta>" + questions_section(res, endpoint) + "<p class=small>This check shows what is visible from the outside. "
              "A strategy session goes deeper: your traffic, your search data and a plan in the right order.</p></div>")
     css = ("body{font:16px/1.55 system-ui,sans-serif;max-width:760px;margin:0 auto;padding:1.5rem 16px;color:#1c2330;background:#fff}"
            "h1{margin:0}h2{margin:2rem 0 .5rem}.sub{color:#5b6573;margin:.2rem 0 1rem}"
@@ -172,6 +181,7 @@ def to_html(res: dict) -> str:
            ".cta .sub{color:#c6cdd8}.small{font-size:.85rem;color:#c6cdd8;margin-top:1rem}button.btn{border:0;cursor:pointer;font:inherit}"
            ".btn{display:inline-block;background:#e8590c;color:#fff;padding:.7rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:700}"
            ".cta a{display:inline-block;background:#e8590c;color:#fff;padding:.7rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:700}"
+           ".small2{font-size:.9rem;color:#5b6573}.small2 input{width:60%;max-width:100%;padding:.3rem;border-radius:8px;border:1px solid #ccd3dd;font:inherit}.small2 button{padding:.3rem .8rem;border-radius:8px;border:0;background:#1c2330;color:#fff;cursor:pointer}"
            ".chips{margin:1rem 0 0}.chip{display:inline-block;font-size:.8rem;font-weight:700;padding:.15rem .6rem;border-radius:99px;color:#fff}"
            ".chip.g{background:#2f9e44}.chip.a{background:#e67700}.chip.r{background:#e03131}"
            ".ic{display:inline-block;width:1.4rem;height:1.4rem;line-height:1.4rem;text-align:center;border-radius:50%;color:#fff;margin-right:.5rem;font-size:.8rem;background:#f59f00}"
@@ -182,4 +192,5 @@ def to_html(res: dict) -> str:
            "@media(prefers-color-scheme:dark){body{background:#12161d;color:#e8ecf2}.hero,.area,.sp{background:#1c222c}.f{background:#181d26}"
            ".sub,.ev,.area span,.big small{color:#9aa5b5}td,th{border-color:#2a3240}}")
     return ("<!doctype html><html lang=en><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
-            f"<title>Website health check</title><style>{css}</style><body>" + "".join(h) + "</body></html>")
+            f"<title>Website health check</title><meta name=robots content=noindex><style>{css}</style><body>" + "".join(h) +
+            HEIGHT_JS + "</body></html>")

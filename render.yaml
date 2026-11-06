@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: core-audit
+    runtime: python
+    plan: starter            # needs a persistent disk, so not the free plan
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - {key: PYTHON_VERSION, value: "3.12.7"}
+      - {key: DB_PATH, value: /data/core.db}
+      - {key: PUBLIC_BASE_URL, value: "https://audit.athanmarketing.com"}
+      - {key: SITE_ORIGINS, value: "https://athanmarketing.com,https://www.athanmarketing.com"}
+      - {key: PRIVACY_URL, value: "https://athanmarketing.com/privacy-policy/"}
+      - {key: ADMIN_EMAILS, value: "vsmartboy@gmail.com"}
+      - {key: IP_SALT, generateValue: true}
+      - {key: ADMIN_KEY, generateValue: true}
+      # secrets: set these by hand in the Render dashboard (sync: false = never stored in git)
+      - {key: ANTHROPIC_API_KEY, sync: false}
+      - {key: PAGESPEED_API_KEY, sync: false}
+      - {key: DATAFORSEO_LOGIN, sync: false}
+      - {key: DATAFORSEO_PASSWORD, sync: false}
+      - {key: AWEBER_CLIENT_ID, sync: false}
+      - {key: AWEBER_CLIENT_SECRET, sync: false}
+      - {key: AWEBER_ACCOUNT_ID, sync: false}
+      - {key: AWEBER_LIST_ID, sync: false}
+      - {key: ALERT_WEBHOOK_URL, sync: false}
+      - {key: TURNSTILE_SITEKEY, sync: false}
+      - {key: TURNSTILE_SECRET, sync: false}

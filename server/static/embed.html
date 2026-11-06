@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Free C.O.R.E. Website Check</title>
+<style>
+:root{--bg:#fff;--fg:#1c2330;--muted:#5b6573;--card:#f4f6f9;--line:#dde2ea;--brand:#e8590c;--ink:#1c2330}
+@media(prefers-color-scheme:dark){:root{--bg:#12161d;--fg:#e8ecf2;--muted:#9aa5b5;--card:#1c222c;--line:#2a3240}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:20px 16px}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.1;margin:.2rem 0 .6rem}
+h2{font-size:1.2rem;margin:2rem 0 .6rem}
+.lead{color:var(--muted);font-size:1.1rem;margin:0 0 1.2rem}
+.tag{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--brand)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.7rem}
+.card{background:var(--card);border-radius:14px;padding:.9rem 1rem}
+.card b{display:block;margin-bottom:.15rem}
+.card span{color:var(--muted);font-size:.93rem}
+.core{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin:1rem 0}
+.core div{background:var(--card);border-radius:12px;padding:.6rem;text-align:center;font-size:.85rem;color:var(--muted)}
+.core b{display:block;font-size:1.6rem;color:var(--brand);line-height:1}
+form{background:var(--card);border-radius:16px;padding:1.2rem;margin-top:1.4rem}
+label.f{display:block;font-weight:600;margin-bottom:.8rem}
+label.f small{font-weight:400;color:var(--muted)}
+input[type=text],input[type=email],input[type=url]{width:100%;padding:.75rem;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit;margin-top:.25rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+@media(max-width:560px){.row{grid-template-columns:1fr}.core{grid-template-columns:repeat(2,1fr)}}
+.chk{display:flex;gap:.6rem;align-items:flex-start;font-size:.92rem;color:var(--muted);margin:.6rem 0}
+.chk input{margin-top:.25rem}
+.chk a{color:var(--brand)}
+button.go,a.go{display:inline-block;background:var(--brand);color:#fff;border:0;border-radius:12px;padding:.9rem 1.4rem;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;margin-top:.6rem}
+button.go[disabled]{opacity:.6;cursor:wait}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.note{font-size:.88rem;color:var(--muted);margin-top:.8rem}
+.err{background:#fff0f0;color:#9b1c1c;border-radius:10px;padding:.7rem .9rem;margin:.8rem 0;display:none}
+@media(prefers-color-scheme:dark){.err{background:#3a1d1d;color:#ffb3b3}}
+.limit{display:none;text-align:center;padding:1.2rem}
+.prog{display:none;text-align:center;padding:2rem 1rem}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:1rem auto;max-width:420px}
+.bar i{display:block;height:100%;width:6%;background:var(--brand);border-radius:99px;transition:width 1.2s ease}
+.stage{font-weight:700}
+details{background:var(--card);border-radius:12px;padding:.7rem 1rem;margin-top:.7rem}
+summary{cursor:pointer;font-weight:700}
+ul.c{margin:.6rem 0 0;padding-left:1.2rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="intro">
+  <span class="tag">Free &middot; about 2 minutes</span>
+  <h1>Find the cracks in your marketing</h1>
+  <p class="lead">Enter your website. You get a plain-English report on your <b>Client, Offer, Route and Engine</b>: what is already working, and what is quietly costing you leads.</p>
+  <div class="core"><div><b>C</b>Client</div><div><b>O</b>Offer</div><div><b>R</b>Route</div><div><b>E</b>Engine</div></div>
+
+  <h2>What you get</h2>
+  <div class="grid">
+    <div class="card"><b>A C.O.R.E. scorecard</b><span>A score for each part of your marketing, and which one to fix first.</span></div>
+    <div class="card"><b>What is working</b><span>We tell you what you are doing right, not only what is wrong.</span></div>
+    <div class="card"><b>Cracks, in plain English</b><span>Headlines, buttons, contact paths, with the exact text we found and how to fix it.</span></div>
+    <div class="card"><b>Speed and Core Web Vitals</b><span>Mobile and desktop, scored the way Google scores them.</span></div>
+    <div class="card"><b>How people find you</b><span>The Google searches that already show your site, and the ones you almost win.</span></div>
+    <div class="card"><b>Google Business Profile</b><span>For local businesses: is it set up, reviews, and does it match your site.</span></div>
+  </div>
+
+  <details><summary>Everything we check</summary>
+    <ul class="c">
+      <li>Headline and opening copy (generic "Welcome to..." lines, who it speaks to)</li>
+      <li>Meta titles, meta descriptions and heading structure across your main pages</li>
+      <li>Calls to action, button wording and how easy it is to contact you</li>
+      <li>Page speed, Core Web Vitals, mobile friendliness, HTTPS</li>
+      <li>robots.txt, XML sitemap, indexing, broken links, structured data, tracking</li>
+      <li>Keyword visibility, social links and share previews, name/address/phone, Google Business Profile</li>
+    </ul>
+  </details>
+  <p class="note"><b>Good to know:</b> we only look at what any visitor can see, so we never need a login. Each person and each company gets <b>2 free checks</b>.</p>
+
+  <form id="f" novalidate>
+    <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website2" tabindex="-1" autocomplete="off"></label></div>
+    <label class="f">Your website <input type="text" name="url" placeholder="yourbusiness.com" inputmode="url" autocomplete="url" required></label>
+    <div class="row">
+      <label class="f">First name <input type="text" name="name" autocomplete="given-name" required></label>
+      <label class="f">Email, where your report goes <input type="email" name="email" autocomplete="email" required></label>
+    </div>
+    <label class="f">City <small>(optional, for local businesses)</small> <input type="text" name="city" autocomplete="address-level2"></label>
+    <label class="chk"><input type="checkbox" name="privacy" required><span>I agree to the <a href="__PRIVACY__" target="_blank" rel="noopener">privacy policy</a>. Athan Marketing may email me my report and follow-up about my results. <b>(required)</b></span></label>
+    <label class="chk"><input type="checkbox" name="marketing"><span>Also send me occasional marketing tips. Unsubscribe any time. (optional)</span></label>
+    __TURNSTILE__
+    <div class="err" id="err" role="alert"></div>
+    <button class="go" id="go" type="submit">Get my free report</button>
+  </form>
+</div>
+
+<div class="prog" id="prog">
+  <h2>Checking your website</h2>
+  <div class="bar"><i id="bar"></i></div>
+  <p class="stage" id="stage">Starting</p>
+  <p class="note">Please keep this page open. This usually takes one to two minutes.</p>
+</div>
+
+<div class="card limit" id="limit">
+  <h2 id="limit-title">You have used your free checks</h2>
+  <p id="limit-text" class="lead"></p>
+  <a class="go" href="__REVIEW__" target="_blank" rel="noopener">Book a free review call</a>
+</div>
+</div>
+
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var steps=["Reading your website","Measuring speed on mobile and desktop","Checking your pages and headlines","Looking up your Google Business Profile","Seeing how people find you on Google","Reading your copy like a visitor would","Writing your report"];
+  function post(){try{parent.postMessage({type:'core-audit-height',height:document.documentElement.scrollHeight},'*')}catch(e){}}
+  if(window.ResizeObserver)new ResizeObserver(post).observe(document.body);window.addEventListener('load',post);
+
+  var f=$('f');
+  function showErr(m){var e=$('err');e.textContent=m;e.style.display='block';post();}
+  f.addEventListener('submit',function(ev){
+    ev.preventDefault();$('err').style.display='none';
+    var d=new FormData(f);
+    var body={url:(d.get('url')||'').trim(),name:(d.get('name')||'').trim(),email:(d.get('email')||'').trim(),city:(d.get('city')||'').trim(),
+      consent_privacy:!!d.get('privacy'),consent_marketing:!!d.get('marketing'),hp:d.get('website2')||'',turnstile:d.get('cf-turnstile-response')||''};
+    if(!body.url||!body.name||!body.email){return showErr('Please fill in your website, first name and email.');}
+    if(!body.consent_privacy){return showErr('Please tick the privacy box so we can send your report.');}
+    $('go').disabled=true;
+    fetch('/api/audits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(function(r){return r.json().then(function(j){return{s:r.status,j:j}})})
+      .then(function(x){
+        $('go').disabled=false;
+        if(x.s===200||x.s===202){ if(x.j.status==='done'){return location.href='/r/'+x.j.token;} return track(x.j.token); }
+        if(x.s===429&&x.j.limit){return showLimit(x.j);}
+        showErr(x.j.message||'Something went wrong. Please try again.');
+      }).catch(function(){$('go').disabled=false;showErr('We could not reach the server. Please try again.');});
+  });
+  function showLimit(j){$('intro').style.display='none';$('limit').style.display='block';
+    $('limit-title').textContent=j.title;$('limit-text').textContent=j.message;post();}
+  function track(token){
+    $('intro').style.display='none';$('prog').style.display='block';post();
+    var n=0;
+    var t=setInterval(function(){
+      fetch('/api/audits/'+token).then(function(r){return r.json()}).then(function(j){
+        if(j.stage){var i=steps.indexOf(j.stage);$('stage').textContent=j.stage;$('bar').style.width=(i<0?10:Math.min(95,12+i*14))+'%';}
+        if(j.status==='done'){clearInterval(t);$('bar').style.width='100%';location.href='/r/'+token;}
+        if(j.status==='failed'){clearInterval(t);$('prog').style.display='none';$('intro').style.display='block';showErr(j.message||'We could not check that website. Check the address and try again.');}
+      }).catch(function(){});
+      if(++n>150){clearInterval(t);showErr('This is taking longer than expected. Please try again in a few minutes.');}
+    },2500);
+  }
+})();
+</script>
+</body>
+</html>

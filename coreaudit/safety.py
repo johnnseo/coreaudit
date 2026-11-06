@@ -19,6 +19,13 @@ def normalize_url(raw: str) -> str:
         raise UnsafeURL("Only http and https are allowed")
     if not p.hostname or "." not in p.hostname:
         raise UnsafeURL("Enter a full domain, like example.com")
+    try:
+        ipaddress.ip_address(p.hostname.strip("[]"))
+        is_ip = True
+    except ValueError:
+        is_ip = False
+    if is_ip:
+        raise UnsafeURL("Please enter your website's domain name, not an IP address")
     if p.username or p.password:
         raise UnsafeURL("URLs with credentials are not allowed")
     if p.port not in (None, 80, 443):

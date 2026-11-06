@@ -20,6 +20,9 @@ python -m coreaudit --url example.com --no-ai
 python -m pytest -q
 ```
 
+## Web service (embedded on the website)
+See `docs/DEPLOY.md`. `server/` is the FastAPI app: embeddable page, email gate, 2 checks per person/company, reports, AWeber.
+
 ## Layout
 | File | Job |
 |---|---|
