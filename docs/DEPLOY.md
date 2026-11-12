@@ -53,3 +53,27 @@ Same person re-opening the same site gets the saved report and it is not counted
 Have your privacy policy mention: this tool, what is collected (name, email, website, city, answers, IP stored only
 as a one-way hash), AI processing of public page text, AWeber and DataForSEO/Google as processors, how to unsubscribe
 and delete data. Have a lawyer confirm consent wording for Spain/EU and the US.
+
+## The Scorecard and the lead magnet test
+
+The 12-question C.O.R.E. Scorecard runs in the same service, with the same branding, email-first form and AWeber list.
+
+**Pages**
+- `https://audit.athanmarketing.com/scorecard` the scorecard on its own
+- `https://audit.athanmarketing.com/embed` the website check on its own
+- `https://audit.athanmarketing.com/get` sends each new visitor to one of the two (50/50) and remembers which, for 60 days
+
+**On WordPress** (Custom HTML block). `data-magnet` can be `audit`, `scorecard` or `ab`:
+
+```html
+<div id="core-audit" data-magnet="ab"></div>
+<script src="https://audit.athanmarketing.com/widget.js" async></script>
+```
+
+Change the split with the `AB_SCORECARD_SHARE` env var in Render (0.5 = half see the scorecard).
+
+**AWeber.** Scorecard subscribers get the tag `core-scorecard` (plus `fix-first-X`, `scorecard-low|mid|high`). Add a second automation: when tag `core-scorecard` is applied, send an email with a link to `{!cf_report_url}`. The results page says "We also emailed you a link", so the automation must exist.
+
+**Reading the test.** Open `https://audit.athanmarketing.com/admin/ab?key=YOUR_ADMIN_KEY`. It shows, for each group, visitors, people who gave an email, and people who finished. Wait for about 100 visitors per group. Judge on finished leads, then on how many of each type book a call. The CSV at `/admin/leads.csv` has a `magnet` column.
+
+Both pages ask for the email first, so the test compares the two magnets and not the form.

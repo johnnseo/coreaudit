@@ -20,6 +20,7 @@ def get():
         "admin_key": e("ADMIN_KEY", ""),
         "admin_emails": [x.lower() for x in _list("ADMIN_EMAILS")],   # unlimited tries, for testing
         "ip_salt": e("IP_SALT", "change-me"),
+        "ab_scorecard_share": float(e("AB_SCORECARD_SHARE", "0.5")),
         "privacy_url": e("PRIVACY_URL", "https://athanmarketing.com/privacy-policy/"),
         "review_url": e("REVIEW_URL", "https://calendar.app.google/xkJUcqHrNDSCYwNi8"),
         "turnstile_site": e("TURNSTILE_SITEKEY", ""),

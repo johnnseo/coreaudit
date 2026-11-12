@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>The C.O.R.E. Scorecard</title>
+<style>
+/*THEME*/
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--text);font:16px/1.55 var(--body);padding:20px 16px}
+.wrap{max-width:640px;margin:0 auto}
+h1,h2,h3,button.go,a.go,.stage{font-family:var(--head);color:var(--ink)}
+h1{font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.1;margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.2rem;font-weight:600;margin:1.6rem 0 .6rem}
+.tag{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold-deep)}
+.lead{color:var(--muted);font-size:1.1rem;margin:0 0 1.2rem}
+.core{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin:1rem 0}
+.core div{background:var(--card);border-radius:12px;padding:.6rem;text-align:center;font-size:.85rem;color:var(--muted);border-bottom:3px solid var(--gold)}
+.core b{display:block;font-size:1.6rem;color:var(--ink);line-height:1;font-weight:800;font-family:var(--head)}
+@media(max-width:480px){.core{grid-template-columns:repeat(2,1fr)}}
+.card{background:var(--card);border-radius:var(--r);padding:1.1rem 1.2rem}
+form.card{margin-top:1.2rem}
+label.f{display:block;font-weight:600;margin-bottom:.8rem}
+input[type=text],input[type=email]{width:100%;padding:.75rem;border-radius:10px;border:1px solid #cfc8ad;background:#fff;color:var(--text);font:inherit;margin-top:.25rem}
+input:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+.chk{display:flex;gap:.6rem;align-items:flex-start;font-size:.92rem;color:var(--muted);margin:.6rem 0}
+.chk input{margin-top:.25rem;accent-color:var(--ink)}.chk a{color:var(--gold-deep)}
+button.go,a.go{display:inline-block;background:var(--gold);color:var(--text);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1.5rem;font-size:1rem;font-weight:600;cursor:pointer;text-decoration:none;margin-top:.6rem}
+button.ghost{background:transparent}
+button.go[disabled]{opacity:.6;cursor:wait}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.note,.meta{font-size:.9rem;color:var(--muted)}
+.err{background:#fff0f0;color:#9b1c1c;border-radius:10px;padding:.7rem .9rem;margin:.8rem 0;display:none}
+.progress{display:flex;gap:4px;margin:0 0 6px}.progress i{flex:1;height:6px;background:var(--line);border-radius:2px}
+.progress i.done{background:var(--ink)}.progress i.now{background:var(--gold)}
+.q{font-family:var(--body);font-size:1.3rem;font-weight:600;line-height:1.3;margin:10px 0 6px}
+.hint{color:var(--muted)}
+.opts{display:grid;gap:10px;margin-top:18px}
+.opt{text-align:left;background:#fff;border:1px solid #cfc8ad;border-radius:12px;padding:14px 16px;color:var(--text);font:inherit;cursor:pointer}
+.opt:hover{border-color:var(--ink);background:#fffdf5}.opt b{display:block;font-weight:600}.opt span{color:var(--muted);font-size:.92rem}
+.bars{display:flex;flex-direction:column;gap:14px}
+.bar{display:grid;grid-template-columns:96px 1fr 44px;gap:12px;align-items:center}
+.bar b{font-family:var(--head);font-size:1rem;color:var(--ink)}
+.track{height:14px;background:var(--line);border-radius:9px;overflow:hidden}.fill{height:100%}
+.bar .n{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.first{border-left:4px solid var(--gold);padding-left:16px;margin:1.4rem 0}
+.first ul{margin:.4rem 0 0;padding-left:1.2rem}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="intro">
+  <span class="tag">Free &middot; about 3 minutes</span>
+  <h1>The C.O.R.E. Scorecard</h1>
+  <p class="lead">Twelve quick questions. A score for each part of your marketing, and the one to fix first.</p>
+  <div class="core"><div><b>C</b>Client</div><div><b>O</b>Offer</div><div><b>R</b>Route</div><div><b>E</b>Engine</div></div>
+  <form class="card" id="f">
+    <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website2" tabindex="-1" autocomplete="off"></label></div>
+    <div class="row">
+      <label class="f">First name <input type="text" name="name" autocomplete="given-name" required></label>
+      <label class="f">Email, where your results go <input type="email" name="email" autocomplete="email" required></label>
+    </div>
+    <label class="chk"><input type="checkbox" name="privacy" required><span>I agree to the <a href="__PRIVACY__" target="_blank" rel="noopener">privacy policy</a>. Athan Marketing may email me my results and follow-up about them. <b>(required)</b></span></label>
+    <label class="chk"><input type="checkbox" name="marketing"><span>Also send me occasional marketing tips. Unsubscribe any time. (optional)</span></label>
+    <div class="err" id="err" role="alert"></div>
+    <button class="go" id="go" type="submit">Start the scorecard</button>
+  </form>
+</div>
+
+<div id="quiz" class="hide"></div>
+<div id="result" class="hide"></div>
+
+</div>
+<script>
+(function(){
+  var D=__DATA__, $=function(i){return document.getElementById(i)};
+  var OPTS=[{l:"Yes",d:"This is true for me today.",v:2},{l:"Partly",d:"Sometimes, or not for everything.",v:1},{l:"No",d:"Not yet.",v:0}];
+  var token=D.token, ans=[], i=0;
+  function post(){try{parent.postMessage({type:'core-audit-height',height:document.documentElement.scrollHeight},'*')}catch(e){}}
+  if(window.ResizeObserver)new ResizeObserver(post).observe(document.body);window.addEventListener('load',post);
+  function show(id){['intro','quiz','result'].forEach(function(x){$(x).className=(x===id?'':'hide')});window.scrollTo(0,0);post();}
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+  var f=$('f');
+  function err(m){var e=$('err');e.textContent=m;e.style.display='block';post();}
+  f.addEventListener('submit',function(ev){
+    ev.preventDefault();$('err').style.display='none';
+    var d=new FormData(f), b={name:(d.get('name')||'').trim(),email:(d.get('email')||'').trim(),consent_privacy:!!d.get('privacy'),
+      consent_marketing:!!d.get('marketing'),hp:d.get('website2')||''};
+    if(!b.name||!b.email)return err('Please fill in your first name and email.');
+    if(!b.consent_privacy)return err('Please tick the privacy box so we can send your results.');
+    $('go').disabled=true;
+    fetch('/api/scorecard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})
+      .then(function(r){return r.json().then(function(j){return{s:r.status,j:j}})})
+      .then(function(x){$('go').disabled=false;
+        if(x.s===200){token=x.j.token; if(x.j.done){return load();} i=0;ans=[];return question();}
+        err(x.j.message||'Something went wrong. Please try again.');})
+      .catch(function(){$('go').disabled=false;err('We could not reach the server. Please try again.');});
+  });
+
+  function question(){
+    var q=D.q[i], prog='';
+    for(var n=0;n<D.q.length;n++)prog+='<i class="'+(n<i?'done':n===i?'now':'')+'"></i>';
+    $('quiz').innerHTML='<div class="progress" aria-hidden="true">'+prog+'</div><div class="meta">Question '+(i+1)+' of '+D.q.length+' &middot; '+D.cracks[q[0]].name+'</div>'+
+      '<div class="card" style="margin-top:.8rem"><h2 class="q">'+esc(q[1])+'</h2><p class="hint">'+esc(q[2])+'</p><div class="opts">'+
+      OPTS.map(function(o,k){return '<button class="opt" data-k="'+k+'"><b>'+o.l+'</b><span>'+o.d+'</span></button>'}).join('')+'</div></div>'+
+      (i>0?'<p><button class="go ghost" id="back" type="button">Back</button></p>':'')+'<div class="err" id="qerr" role="alert"></div>';
+    show('quiz');
+    Array.prototype.forEach.call($('quiz').querySelectorAll('.opt'),function(b){b.onclick=function(){
+      ans[i]=OPTS[+b.dataset.k].v;i++; if(i<D.q.length)question(); else finish();}});
+    var back=$('back'); if(back)back.onclick=function(){i--;question()};
+  }
+  function finish(){
+    fetch('/api/scorecard/'+token+'/answers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answers:ans})})
+      .then(function(r){return r.json()}).then(function(j){ if(j.scores)render(j); else {i=D.q.length-1;question();$('qerr').textContent=j.message||'Please try again.';$('qerr').style.display='block';} })
+      .catch(function(){i=D.q.length-1;question();$('qerr').textContent='We could not reach the server. Please try again.';$('qerr').style.display='block';});
+  }
+  function load(){
+    fetch('/api/scorecard/'+token).then(function(r){return r.json()}).then(function(j){ if(j.done)render(j.result); else {i=0;ans=[];question();} });
+  }
+  function color(p){return p>=.75?'#2f9e44':p>=.4?'#b45f06':'#e03131'}
+  function render(r){
+    var c=D.cracks[r.fix_first], p=r.total/r.max_total;
+    var verdict=p>=.8?'Your foundation is mostly solid. Work on the lowest area and keep tracking.':p>=.5?'The foundation holds in places and leaks in others. Fix the lowest area first.':'There are real cracks in the foundation. Fix them in order, starting with the lowest area.';
+    var bars=D.cracks.map(function(k,n){var q=r.scores[n]/r.max[n];
+      return '<div class="bar"><b>'+k.name+'</b><div class="track"><div class="fill" style="width:'+Math.round(q*100)+'%;background:'+color(q)+'"></div></div><span class="n">'+r.scores[n]+'/'+r.max[n]+'</span></div>'}).join('');
+    $('result').innerHTML='<span class="tag">Your result</span><h1>'+r.total+' of '+r.max_total+'</h1><p class="lead">'+verdict+'</p>'+
+      '<div class="card bars" role="img" aria-label="Scores by area">'+bars+'</div>'+
+      '<div class="first"><span class="tag">Fix this first</span><h2 style="margin-top:.3rem">'+c.name+': '+c.sub+'</h2><p>'+esc(c.why)+'</p><p><b>Test it yourself</b></p><ul>'+
+      c.test.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ul></div>'+
+      '<p class="meta">The order is Client, Offer, Route, Engine for a reason. A weak area above leaks into every area below it. If two are close, start with the one that comes first.</p>'+
+      '<div class="card" style="margin-top:1.2rem"><h3 style="margin:0 0 .4rem">Want a second pair of eyes?</h3><p>In a Foundation Review I look at your four areas and tell you what to fix first and in what order.</p>'+
+      '<a class="go" href="'+esc(D.review)+'" target="_blank" rel="noopener">Book a Foundation Review</a></div>'+
+      '<p class="meta" style="margin-top:1rem">We also emailed you a link to these results.</p>';
+    show('result');
+  }
+  if(token)load();
+})();
+</script>
+</body>
+</html>

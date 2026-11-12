@@ -1,13 +1,15 @@
 /* Drop-in loader for athanmarketing.com:
    <div id="core-audit"></div>
-   <script src="https://audit.athanmarketing.com/widget.js" async></script> */
+   <script src="https://audit.athanmarketing.com/widget.js" async></script>
+   data-magnet on the div: audit (default), scorecard, or ab (50/50 split of the two) */
 (function () {
   var me = document.currentScript || document.querySelector('script[src*="widget.js"]');
   var base = new URL(me.src).origin;
   var host = document.getElementById('core-audit');
   if (!host) { host = document.createElement('div'); me.parentNode.insertBefore(host, me); }
   var f = document.createElement('iframe');
-  f.src = base + '/embed';
+  var magnet = host.getAttribute('data-magnet') || me.getAttribute('data-magnet') || 'audit';
+  f.src = base + ({ab: '/get', scorecard: '/scorecard', audit: '/embed'}[magnet] || '/embed');
   f.title = 'C.O.R.E. website check';
   f.loading = 'lazy';
   f.style.cssText = 'width:100%;border:0;min-height:720px;display:block;background:transparent';

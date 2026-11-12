@@ -23,6 +23,7 @@ from coreaudit.scoring import route_lead, score
 
 from . import config as config_mod
 from . import limits
+from . import scorecard as scorecard_mod
 from .aweber import AWeber
 from .db import DB
 
@@ -36,6 +37,8 @@ def create_app(cfg=None, run_audit=None):
     aw = AWeber(cfg, db)
     pool = ThreadPoolExecutor(max_workers=cfg["max_concurrent"])
     runner = run_audit or audit_mod.run_audit
+    cfg["static"] = STATIC
+    hooks = {}
     app = FastAPI(title="C.O.R.E. Audit", docs_url=None, redoc_url=None, openapi_url=None)
 
     def frame_headers():
@@ -62,7 +65,7 @@ def create_app(cfg=None, run_audit=None):
 
     @app.get("/", response_class=HTMLResponse)
     @app.get("/embed", response_class=HTMLResponse)
-    def embed():
+    def embed(req: Request):
         ts = ""
         if cfg["turnstile_site"]:
             ts = ('<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>'
@@ -70,7 +73,9 @@ def create_app(cfg=None, run_audit=None):
         html = (STATIC / "embed.html").read_text()
         html = html.replace("__PRIVACY__", cfg["privacy_url"]).replace("__REVIEW__", cfg["review_url"]).replace("__TURNSTILE__", ts)
         html = html.replace("/*THEME*/", theme.css())
-        return HTMLResponse(html, headers=frame_headers())
+        resp = HTMLResponse(html, headers=frame_headers())
+        hooks["seen"](req, resp, "audit")
+        return resp
 
     app.mount("/static/fonts", StaticFiles(directory=STATIC / "fonts"), name="fonts")
 
@@ -118,7 +123,9 @@ def create_app(cfg=None, run_audit=None):
         token = secrets.token_urlsafe(24)
         db.create(token=token, status="queued", stage="Reading your website", name=name, email=email, email_norm=en,
                   url=url, domain=domain, city=(b.get("city") or "").strip()[:60], ip_hash=iph,
-                  consent_privacy=1, consent_marketing=1 if b.get("consent_marketing") else 0, consent_at=time.time())
+                  consent_privacy=1, consent_marketing=1 if b.get("consent_marketing") else 0, consent_at=time.time(),
+                  vid=req.cookies.get("core_vid", ""), variant=req.cookies.get("core_ab", "direct"))
+        db.log_event(req.cookies.get("core_vid", ""), req.cookies.get("core_ab", "direct"), "audit", "lead")
         pool.submit(work, token, ip)
         return JSONResponse({"token": token, "status": "queued"}, 202)
 
@@ -135,6 +142,7 @@ def create_app(cfg=None, run_audit=None):
         except Exception as ex:
             db.update(token, status="failed", error=str(ex)[:200], finished=time.time())
             return
+        db.log_event(row.get("vid") or "", row.get("variant") or "direct", "audit", "complete")
         after_audit(token, row, res, ip)
 
     def after_audit(token, row, res, ip):
@@ -216,13 +224,17 @@ def create_app(cfg=None, run_audit=None):
         admin(req)
         buf = io.StringIO()
         w = csv.writer(buf)
-        w.writerow(["date", "name", "email", "site", "city", "status", "route", "newsletter_optin", "aweber", "answers", "score"])
+        w.writerow(["date", "name", "email", "site", "city", "status", "route", "newsletter_optin", "aweber", "answers", "score", "magnet"])
         for r in db.leads():
             sc = ""
             if r["result"]:
                 sc = json.loads(r["result"])["scores"]["overall"]
             w.writerow([time.strftime("%Y-%m-%d %H:%M", time.gmtime(r["created"])), r["name"], r["email"], r["url"], r["city"],
-                        r["status"], r["route"], r["consent_marketing"], r["aweber"], r["answers"], sc])
+                        r["status"], r["route"], r["consent_marketing"], r["aweber"], r["answers"], sc, "audit"])
+        for r in db.scorecards():
+            sc = json.loads(r["scores"])["total"] if r["scores"] else ""
+            w.writerow([time.strftime("%Y-%m-%d %H:%M", time.gmtime(r["created"])), r["name"], r["email"], "", "",
+                        "done" if r["done"] else "started", "", r["consent_marketing"], r["aweber"], "", sc, "scorecard"])
         return PlainTextResponse(buf.getvalue(), media_type="text/csv")
 
     @app.get("/admin/aweber/connect")
@@ -243,6 +255,7 @@ def create_app(cfg=None, run_audit=None):
         admin(req)
         return aw.lists()
 
+    scorecard_mod.add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests, hooks)
     return app
 
 
