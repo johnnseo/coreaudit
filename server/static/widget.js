@@ -1,7 +1,7 @@
 /* Drop-in loader for athanmarketing.com:
    <div id="core-audit"></div>
    <script src="https://audit.athanmarketing.com/widget.js" async></script>
-   data-magnet on the div: audit (default), scorecard, or ab (50/50 split of the two) */
+   data-magnet on the div: audit (default) or scorecard. Add ?src=name to the page link to track where visitors came from. */
 (function () {
   var me = document.currentScript || document.querySelector('script[src*="widget.js"]');
   var base = new URL(me.src).origin;
@@ -9,7 +9,8 @@
   if (!host) { host = document.createElement('div'); me.parentNode.insertBefore(host, me); }
   var f = document.createElement('iframe');
   var magnet = host.getAttribute('data-magnet') || me.getAttribute('data-magnet') || 'audit';
-  f.src = base + ({ab: '/get', scorecard: '/scorecard', audit: '/embed'}[magnet] || '/embed');
+  var src = new URLSearchParams(location.search).get('src');   // lets you tag links, e.g. ?src=youtube
+  f.src = base + (magnet === 'scorecard' ? '/scorecard' : '/embed') + (src ? '?src=' + encodeURIComponent(src) : '');
   f.title = 'C.O.R.E. website check';
   f.loading = 'lazy';
   f.style.cssText = 'width:100%;border:0;min-height:720px;display:block;background:transparent';

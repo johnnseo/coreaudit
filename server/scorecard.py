@@ -1,6 +1,6 @@
 """The C.O.R.E. Scorecard (12-question self check) and the A/B split between it and the website check."""
 import json
-import random
+import re
 import secrets
 import time
 from html import escape
@@ -59,6 +59,11 @@ def band(total, mx):
     return "high" if p >= 0.8 else "mid" if p >= 0.5 else "low"
 
 
+def clean_src(v):
+    v = re.sub(r"[^a-z0-9_-]", "", str(v or "").lower())[:30]
+    return v or "direct"
+
+
 def add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests_mod, hooks):
     secure = cfg["public_base"].startswith("https")
 
@@ -66,31 +71,18 @@ def add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests_mod
         resp.set_cookie(k, v, max_age=60 * 86400, httponly=True, secure=secure, samesite="none" if secure else "lax")
 
     def who(req):
-        return req.cookies.get("core_vid", ""), req.cookies.get("core_ab", "direct")
+        return req.cookies.get("core_vid", "")
+
+    src_of = clean_src
 
     def seen(req, resp, magnet):
-        vid, variant = who(req)
+        vid = who(req)
         if not vid:
             vid = secrets.token_urlsafe(9)
             cookie(resp, "core_vid", vid)
-        db.log_event(vid, variant, magnet, "view")
+        db.log_event(vid, src_of(req.query_params.get("src") or ("audit-bonus" if req.query_params.get("from") else "")), magnet, "view")
 
-    # ---------- A/B split ----------
     hooks["seen"] = seen
-
-    @app.get("/get")
-    def split(req: Request):
-        v = req.cookies.get("core_ab")
-        if v not in ("audit", "scorecard"):
-            forced = req.query_params.get("v")
-            v = forced if forced in ("audit", "scorecard") else (
-                "scorecard" if random.random() < cfg["ab_scorecard_share"] else "audit")
-        resp = RedirectResponse("/scorecard" if v == "scorecard" else "/embed", 302)
-        cookie(resp, "core_ab", v)
-        if not req.cookies.get("core_vid"):
-            cookie(resp, "core_vid", secrets.token_urlsafe(9))
-        resp.headers["Cache-Control"] = "no-store"
-        return resp
 
     # ---------- pages ----------
     def page(token=""):
@@ -120,6 +112,14 @@ def add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests_mod
             return JSONResponse({"message": "Bad request"}, 400)
         if b.get("hp"):
             return JSONResponse({"message": "Something went wrong. Please try again."}, 400)
+        src, bonus = src_of(b.get("src")), None
+        if b.get("from"):                                   # bonus from the website check: reuse what they already gave us
+            bonus = db.get(str(b["from"]))
+            if not bonus or bonus["status"] != "done":
+                return JSONResponse({"message": "That report link is not valid."}, 400)
+            b = {"name": bonus["name"], "email": bonus["email"], "consent_privacy": bonus["consent_privacy"],
+                 "consent_marketing": bonus["consent_marketing"], "hp": ""}
+            src = "audit-bonus"
         email, name = (b.get("email") or "").strip(), (b.get("name") or "").strip()[:60]
         if not limits.valid_email(email) or not name:
             return JSONResponse({"message": "Please enter a valid email (50 characters max) and your first name."}, 400)
@@ -130,7 +130,7 @@ def add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests_mod
         if db.count_scorecards(ip_hash=iph, since_hours=24) >= 10:
             return JSONResponse({"message": "Too many from this network today. Please try again tomorrow."}, 429)
         en = limits.norm_email(email)
-        vid, variant = who(req)
+        vid, variant = who(req), src
         prior = db.scorecard_for_email(en)                 # same person again: take them to their result
         if prior and prior["done"]:
             return {"token": prior["token"], "done": True}

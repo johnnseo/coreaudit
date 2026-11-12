@@ -124,8 +124,8 @@ def create_app(cfg=None, run_audit=None):
         db.create(token=token, status="queued", stage="Reading your website", name=name, email=email, email_norm=en,
                   url=url, domain=domain, city=(b.get("city") or "").strip()[:60], ip_hash=iph,
                   consent_privacy=1, consent_marketing=1 if b.get("consent_marketing") else 0, consent_at=time.time(),
-                  vid=req.cookies.get("core_vid", ""), variant=req.cookies.get("core_ab", "direct"))
-        db.log_event(req.cookies.get("core_vid", ""), req.cookies.get("core_ab", "direct"), "audit", "lead")
+                  vid=req.cookies.get("core_vid", ""), variant=scorecard_mod.clean_src(b.get("src")))
+        db.log_event(req.cookies.get("core_vid", ""), scorecard_mod.clean_src(b.get("src")), "audit", "lead")
         pool.submit(work, token, ip)
         return JSONResponse({"token": token, "status": "queued"}, 202)
 
@@ -184,7 +184,8 @@ def create_app(cfg=None, run_audit=None):
         if not r or r["status"] != "done":
             raise HTTPException(404)
         res = json.loads(r["result"])
-        html = to_html(res, endpoint=f"/api/reports/{token}/answers", share_url=f'{cfg["public_base"]}/r/{token}', assets=cfg["public_base"])
+        html = to_html(res, endpoint=f"/api/reports/{token}/answers", share_url=f'{cfg["public_base"]}/r/{token}', assets=cfg["public_base"],
+                       bonus_url=f'{cfg["public_base"]}/scorecard?from={token}')
         return HTMLResponse(html, headers=frame_headers())
 
     @app.post("/api/reports/{token}/answers")
@@ -224,17 +225,17 @@ def create_app(cfg=None, run_audit=None):
         admin(req)
         buf = io.StringIO()
         w = csv.writer(buf)
-        w.writerow(["date", "name", "email", "site", "city", "status", "route", "newsletter_optin", "aweber", "answers", "score", "magnet"])
+        w.writerow(["date", "name", "email", "site", "city", "status", "route", "newsletter_optin", "aweber", "answers", "score", "magnet", "source"])
         for r in db.leads():
             sc = ""
             if r["result"]:
                 sc = json.loads(r["result"])["scores"]["overall"]
             w.writerow([time.strftime("%Y-%m-%d %H:%M", time.gmtime(r["created"])), r["name"], r["email"], r["url"], r["city"],
-                        r["status"], r["route"], r["consent_marketing"], r["aweber"], r["answers"], sc, "audit"])
+                        r["status"], r["route"], r["consent_marketing"], r["aweber"], r["answers"], sc, "audit", r.get("variant") or ""])
         for r in db.scorecards():
             sc = json.loads(r["scores"])["total"] if r["scores"] else ""
             w.writerow([time.strftime("%Y-%m-%d %H:%M", time.gmtime(r["created"])), r["name"], r["email"], "", "",
-                        "done" if r["done"] else "started", "", r["consent_marketing"], r["aweber"], "", sc, "scorecard"])
+                        "done" if r["done"] else "started", "", r["consent_marketing"], r["aweber"], "", sc, "scorecard", r.get("variant") or ""])
         return PlainTextResponse(buf.getvalue(), media_type="text/csv")
 
     @app.get("/admin/aweber/connect")

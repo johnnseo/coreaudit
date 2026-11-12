@@ -81,7 +81,7 @@ class DB:
     def leads(self):
         with self.lock:
             return [dict(r) for r in self.c.execute(
-                "SELECT created,name,email,url,city,status,route,consent_marketing,aweber,answers,result FROM audits "
+                "SELECT created,name,email,url,city,status,route,consent_marketing,aweber,answers,result,variant FROM audits "
                 "ORDER BY created DESC")]
 
     def kv_get(self, k):

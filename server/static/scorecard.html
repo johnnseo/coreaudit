@@ -80,7 +80,7 @@ button.go[disabled]{opacity:.6;cursor:wait}
 (function(){
   var D=__DATA__, $=function(i){return document.getElementById(i)};
   var OPTS=[{l:"Yes",d:"This is true for me today.",v:2},{l:"Partly",d:"Sometimes, or not for everything.",v:1},{l:"No",d:"Not yet.",v:0}];
-  var token=D.token, ans=[], i=0;
+  var token=D.token, ans=[], i=0, qs=new URLSearchParams(location.search), SRC=qs.get('src')||'', FROM=qs.get('from')||'';
   function post(){try{parent.postMessage({type:'core-audit-height',height:document.documentElement.scrollHeight},'*')}catch(e){}}
   if(window.ResizeObserver)new ResizeObserver(post).observe(document.body);window.addEventListener('load',post);
   function show(id){['intro','quiz','result'].forEach(function(x){$(x).className=(x===id?'':'hide')});window.scrollTo(0,0);post();}
@@ -91,7 +91,7 @@ button.go[disabled]{opacity:.6;cursor:wait}
   f.addEventListener('submit',function(ev){
     ev.preventDefault();$('err').style.display='none';
     var d=new FormData(f), b={name:(d.get('name')||'').trim(),email:(d.get('email')||'').trim(),consent_privacy:!!d.get('privacy'),
-      consent_marketing:!!d.get('marketing'),hp:d.get('website2')||''};
+      consent_marketing:!!d.get('marketing'),hp:d.get('website2')||'',src:SRC};
     if(!b.name||!b.email)return err('Please fill in your first name and email.');
     if(!b.consent_privacy)return err('Please tick the privacy box so we can send your results.');
     $('go').disabled=true;
@@ -139,7 +139,11 @@ button.go[disabled]{opacity:.6;cursor:wait}
       '<p class="meta" style="margin-top:1rem">We also emailed you a link to these results.</p>';
     show('result');
   }
+  function begin(b){fetch('/api/scorecard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})
+      .then(function(r){return r.json().then(function(j){return{s:r.status,j:j}})})
+      .then(function(x){ if(x.s===200){token=x.j.token; if(x.j.done)return load(); i=0;ans=[];return question();} show('intro');err(x.j.message||'Something went wrong.'); });}
   if(token)load();
+  else if(FROM){ $('intro').className='hide'; begin({from:FROM,src:'audit-bonus'}); }
 })();
 </script>
 </body>

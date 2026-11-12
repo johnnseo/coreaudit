@@ -120,7 +120,7 @@ ul.c{margin:.6rem 0 0;padding-left:1.2rem;color:var(--muted)}
     ev.preventDefault();$('err').style.display='none';
     var d=new FormData(f);
     var body={url:(d.get('url')||'').trim(),name:(d.get('name')||'').trim(),email:(d.get('email')||'').trim(),city:(d.get('city')||'').trim(),
-      consent_privacy:!!d.get('privacy'),consent_marketing:!!d.get('marketing'),hp:d.get('website2')||'',turnstile:d.get('cf-turnstile-response')||''};
+      consent_privacy:!!d.get('privacy'),consent_marketing:!!d.get('marketing'),hp:d.get('website2')||'',src:new URLSearchParams(location.search).get('src')||'',turnstile:d.get('cf-turnstile-response')||''};
     if(!body.url||!body.name||!body.email){return showErr('Please fill in your website, first name and email.');}
     if(!body.consent_privacy){return showErr('Please tick the privacy box so we can send your report.');}
     $('go').disabled=true;

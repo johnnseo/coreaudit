@@ -120,7 +120,7 @@ def _card(f, good=False):
     return "".join(parts) + "</div>"
 
 
-def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = "") -> str:
+def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = "", bonus_url: str = "") -> str:
     if not res.get("ok"):
         return f"<p>We could not check this site: {e(res.get('error', ''))}</p>"
     s, fs = res["scores"], res["findings"]
@@ -164,6 +164,12 @@ def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = ""
                        f"<td>{e((p['h1'] or [''])[0][:60]) or '<i>missing</i>'}</td></tr>" for p in pages)
         h.append(f"<details><summary>Page titles and headlines we checked ({res['crawl']['pages_crawled']} pages)</summary>"
                  f"<table><tr><th>Page</th><th>Title</th><th>Main headline</th></tr>{rows}</table></details>")
+    if bonus_url:
+        h.append("<div class=bonus><span class=badge>Bonus</span><h2>The C.O.R.E. Scorecard</h2>"
+                 "<p>The check above looks at your website from the outside. The scorecard looks at what only you know: "
+                 "who you serve, what you sell, how people reach you and what you track. Twelve questions, about 3 minutes, "
+                 "and you see which part to fix first.</p>"
+                 f"<a class=btn href='{e(bonus_url)}'>Take the scorecard</a></div>")
     h.append("<div class=cta>" + questions_section(res, endpoint) + "<p class=small>This check shows what is visible from the outside. "
              "A strategy session goes deeper: your traffic, your search data and a plan in the right order.</p></div>")
     css = ("body{font:16px/1.55 var(--body);max-width:760px;margin:0 auto;padding:1.5rem 16px;color:var(--text);background:#fff}"
@@ -179,6 +185,7 @@ def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = ""
            ".f.fail{border-color:#e03131}.f.good{border-color:#2f9e44}.f p{margin:.3rem 0}.ev{color:var(--muted);font-size:.92rem}"
            "table{width:100%;border-collapse:collapse;font-size:.92rem}td,th{text-align:left;padding:.4rem;border-bottom:1px solid var(--line)}"
            "details{background:var(--card);border-radius:12px;padding:.7rem 1rem;margin-top:.7rem}summary{cursor:pointer;font-weight:600}"
+           ".bonus{margin-top:2rem;border:2px solid var(--gold);border-radius:var(--r);padding:1rem 1.4rem}.bonus h2{margin:.3rem 0 .5rem}.badge{display:inline-block;background:var(--gold);color:var(--text);font:600 .75rem var(--head);padding:.15rem .6rem;border-radius:99px;text-transform:uppercase;letter-spacing:.05em}"
            ".cta{margin-top:2rem;background:var(--ink);color:#fff;border-radius:var(--r);padding:1rem 1.4rem}"
            ".q fieldset{border:0;padding:0;margin:0 0 1rem}.q legend{font-weight:700;margin-bottom:.4rem}"
            ".q label{display:block;padding:.35rem 0}.q input{accent-color:var(--gold)}.q textarea{width:100%;border-radius:10px;border:0;padding:.6rem;font:inherit;box-sizing:border-box}"
