@@ -19,6 +19,9 @@ CREATE TABLE IF NOT EXISTS scorecards(
   consent_privacy INTEGER, consent_marketing INTEGER, consent_at REAL, vid TEXT, variant TEXT,
   done REAL, scores TEXT, answers TEXT, aweber TEXT);
 CREATE INDEX IF NOT EXISTS i_sc_email ON scorecards(email_norm);
+CREATE TABLE IF NOT EXISTS checklist_leads(
+  created REAL, name TEXT, email TEXT, email_norm TEXT, consent_marketing INTEGER, consent_at REAL, variant TEXT, vid TEXT, aweber TEXT);
+CREATE INDEX IF NOT EXISTS i_cl_email ON checklist_leads(email_norm);
 CREATE TABLE IF NOT EXISTS events(ts REAL, vid TEXT, variant TEXT, magnet TEXT, event TEXT);
 CREATE TABLE IF NOT EXISTS kv(k TEXT PRIMARY KEY, v TEXT);
 """
@@ -131,3 +134,10 @@ class DB:
         with self.lock:
             return [dict(r) for r in self.c.execute(
                 "SELECT created,name,email,consent_marketing,aweber,scores,done,variant FROM scorecards ORDER BY created DESC")]
+
+    def add_checklist_lead(self, **k):
+        self._x(f"INSERT INTO checklist_leads({','.join(k)}) VALUES({','.join('?' * len(k))})", tuple(k.values()))
+
+    def checklist_leads(self):
+        with self.lock:
+            return [dict(r) for r in self.c.execute("SELECT * FROM checklist_leads ORDER BY created DESC")]

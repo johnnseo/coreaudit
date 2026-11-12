@@ -72,3 +72,17 @@ The 12-question C.O.R.E. Scorecard runs in the same service, with the same brand
 **AWeber.** Scorecard subscribers get the tag `core-scorecard` (plus `fix-first-X` and `scorecard-low|mid|high`). Add an automation: when tag `core-scorecard` is applied, send an email with a link to `{!cf_report_url}`. The results page says "We also emailed you a link", so that automation must exist.
 
 **Comparing.** Open `https://audit.athanmarketing.com/admin/ab?key=YOUR_ADMIN_KEY`. For each source and page it shows visitors, people who gave an email, and people who finished. `/admin/leads.csv` has `magnet` and `source` columns. Wait for about 100 visitors per source before drawing conclusions.
+
+## The 11-minute video page
+
+`https://audit.athanmarketing.com/watch` is the page the free video lives on. Video first (no email wall), a "do it while you watch" worksheet, a checklist PDF for an email, then the scorecard and the website check as next steps, and one quiet line about the workshop.
+
+In Render, set:
+- `VIDEO_ID` the YouTube id of the video (the part after `v=`). Until it is set the page shows a placeholder.
+- `WORKSHOP_URL` the workshop page. Leave it empty to hide the workshop line.
+
+Use `?src=` on the links you share (`/watch?src=youtube`, `/watch?src=ig-bio`); it shows up in `/admin/ab`.
+
+**AWeber.** Sign-ups get the tag `core-checklist`. Add an automation: when that tag is applied, send an email linking to `https://audit.athanmarketing.com/checklist.pdf`. The page tells people a copy is on its way.
+
+The checklist is built from the same tests as the scorecard. To change its wording, edit `server/static/checklist.html` and regenerate `server/static/core-checklist.pdf` (print `/checklist` to PDF, A4).

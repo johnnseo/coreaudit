@@ -24,6 +24,7 @@ from coreaudit.scoring import route_lead, score
 from . import config as config_mod
 from . import limits
 from . import scorecard as scorecard_mod
+from . import watch as watch_mod
 from .aweber import AWeber
 from .db import DB
 
@@ -232,6 +233,9 @@ def create_app(cfg=None, run_audit=None):
                 sc = json.loads(r["result"])["scores"]["overall"]
             w.writerow([time.strftime("%Y-%m-%d %H:%M", time.gmtime(r["created"])), r["name"], r["email"], r["url"], r["city"],
                         r["status"], r["route"], r["consent_marketing"], r["aweber"], r["answers"], sc, "audit", r.get("variant") or ""])
+        for r in db.checklist_leads():
+            w.writerow([time.strftime("%Y-%m-%d %H:%M", time.gmtime(r["created"])), r["name"], r["email"], "", "", "signed up", "",
+                        r["consent_marketing"], r["aweber"], "", "", "checklist", r["variant"] or ""])
         for r in db.scorecards():
             sc = json.loads(r["scores"])["total"] if r["scores"] else ""
             w.writerow([time.strftime("%Y-%m-%d %H:%M", time.gmtime(r["created"])), r["name"], r["email"], "", "",
@@ -257,6 +261,7 @@ def create_app(cfg=None, run_audit=None):
         return aw.lists()
 
     scorecard_mod.add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests, hooks)
+    watch_mod.add_routes(app, cfg, db, aw, client_ip, NOINDEX, hooks, requests)
     return app
 
 

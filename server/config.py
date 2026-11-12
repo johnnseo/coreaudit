@@ -22,6 +22,8 @@ def get():
         "ip_salt": e("IP_SALT", "change-me"),
         "privacy_url": e("PRIVACY_URL", "https://athanmarketing.com/privacy-policy/"),
         "review_url": e("REVIEW_URL", "https://calendar.app.google/xkJUcqHrNDSCYwNi8"),
+        "video_id": e("VIDEO_ID", ""),                      # YouTube id of the 11-minute video, e.g. dQw4w9WgXcQ
+        "workshop_url": e("WORKSHOP_URL", ""),              # leave empty to hide the quiet workshop line
         "turnstile_site": e("TURNSTILE_SITEKEY", ""),
         "turnstile_secret": e("TURNSTILE_SECRET", ""),
         "alert_webhook": e("ALERT_WEBHOOK_URL", ""),
