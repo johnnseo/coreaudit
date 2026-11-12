@@ -6,41 +6,41 @@
 <meta name="robots" content="noindex">
 <title>Free C.O.R.E. Website Check</title>
 <style>
-:root{--bg:#fff;--fg:#1c2330;--muted:#5b6573;--card:#f4f6f9;--line:#dde2ea;--brand:#e8590c;--ink:#1c2330}
-@media(prefers-color-scheme:dark){:root{--bg:#12161d;--fg:#e8ecf2;--muted:#9aa5b5;--card:#1c222c;--line:#2a3240}}
+/*THEME*/
+:root{--bg:#fff;--fg:var(--text)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:20px 16px}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 var(--body);padding:20px 16px}
 .wrap{max-width:760px;margin:0 auto}
-h1{font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.1;margin:.2rem 0 .6rem}
-h2{font-size:1.2rem;margin:2rem 0 .6rem}
+h1,h2,.stage,summary,.core b,button.go,a.go{font-family:var(--head)}
+h1{color:var(--ink);font-weight:700;font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.1;margin:.2rem 0 .6rem}
+h2{color:var(--ink);font-weight:600;font-size:1.2rem;margin:2rem 0 .6rem}
 .lead{color:var(--muted);font-size:1.1rem;margin:0 0 1.2rem}
-.tag{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--brand)}
+.tag{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold-deep)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.7rem}
-.card{background:var(--card);border-radius:14px;padding:.9rem 1rem}
+.card{background:var(--card);border-radius:var(--r);padding:.9rem 1rem}
 .card b{display:block;margin-bottom:.15rem}
 .card span{color:var(--muted);font-size:.93rem}
 .core{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin:1rem 0}
 .core div{background:var(--card);border-radius:12px;padding:.6rem;text-align:center;font-size:.85rem;color:var(--muted)}
-.core b{display:block;font-size:1.6rem;color:var(--brand);line-height:1}
-form{background:var(--card);border-radius:16px;padding:1.2rem;margin-top:1.4rem}
+.core b{display:block;font-size:1.6rem;color:var(--ink);line-height:1;font-weight:800}.core div{border-bottom:3px solid var(--gold)}
+form{background:var(--card);border-radius:var(--r);padding:1.2rem;margin-top:1.4rem}
 label.f{display:block;font-weight:600;margin-bottom:.8rem}
 label.f small{font-weight:400;color:var(--muted)}
-input[type=text],input[type=email],input[type=url]{width:100%;padding:.75rem;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit;margin-top:.25rem}
+input[type=text],input[type=email],input[type=url]{width:100%;padding:.75rem;border-radius:10px;border:1px solid #cfc8ad;background:#fff;color:var(--fg);font:inherit;margin-top:.25rem}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
 @media(max-width:560px){.row{grid-template-columns:1fr}.core{grid-template-columns:repeat(2,1fr)}}
 .chk{display:flex;gap:.6rem;align-items:flex-start;font-size:.92rem;color:var(--muted);margin:.6rem 0}
 .chk input{margin-top:.25rem}
-.chk a{color:var(--brand)}
-button.go,a.go{display:inline-block;background:var(--brand);color:#fff;border:0;border-radius:12px;padding:.9rem 1.4rem;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;margin-top:.6rem}
+.chk a{color:var(--gold-deep)}.chk input{accent-color:var(--ink)}input:focus{outline:2px solid var(--gold);outline-offset:1px}
+button.go,a.go{display:inline-block;background:var(--gold);color:var(--text);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1.5rem;font-size:1rem;font-weight:600;cursor:pointer;text-decoration:none;margin-top:.6rem}
 button.go[disabled]{opacity:.6;cursor:wait}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .note{font-size:.88rem;color:var(--muted);margin-top:.8rem}
 .err{background:#fff0f0;color:#9b1c1c;border-radius:10px;padding:.7rem .9rem;margin:.8rem 0;display:none}
-@media(prefers-color-scheme:dark){.err{background:#3a1d1d;color:#ffb3b3}}
 .limit{display:none;text-align:center;padding:1.2rem}
 .prog{display:none;text-align:center;padding:2rem 1rem}
 .bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:1rem auto;max-width:420px}
-.bar i{display:block;height:100%;width:6%;background:var(--brand);border-radius:99px;transition:width 1.2s ease}
+.bar i{display:block;height:100%;width:6%;background:var(--gold);border-radius:99px;transition:width 1.2s ease}
 .stage{font-weight:700}
 details{background:var(--card);border-radius:12px;padding:.7rem 1rem;margin-top:.7rem}
 summary{cursor:pointer;font-weight:700}

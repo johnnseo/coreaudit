@@ -11,10 +11,12 @@ from pathlib import Path
 
 import requests
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 
 from coreaudit import audit as audit_mod
 from coreaudit.models import Finding
+from coreaudit import theme
 from coreaudit.report import to_html
 from coreaudit.safety import UnsafeURL, normalize_url
 from coreaudit.scoring import route_lead, score
@@ -67,7 +69,10 @@ def create_app(cfg=None, run_audit=None):
                   f'<div class="cf-turnstile" data-sitekey="{cfg["turnstile_site"]}"></div>')
         html = (STATIC / "embed.html").read_text()
         html = html.replace("__PRIVACY__", cfg["privacy_url"]).replace("__REVIEW__", cfg["review_url"]).replace("__TURNSTILE__", ts)
+        html = html.replace("/*THEME*/", theme.css())
         return HTMLResponse(html, headers=frame_headers())
+
+    app.mount("/static/fonts", StaticFiles(directory=STATIC / "fonts"), name="fonts")
 
     @app.get("/widget.js")
     def widget():
@@ -171,7 +176,7 @@ def create_app(cfg=None, run_audit=None):
         if not r or r["status"] != "done":
             raise HTTPException(404)
         res = json.loads(r["result"])
-        html = to_html(res, endpoint=f"/api/reports/{token}/answers", share_url=f'{cfg["public_base"]}/r/{token}')
+        html = to_html(res, endpoint=f"/api/reports/{token}/answers", share_url=f'{cfg["public_base"]}/r/{token}', assets=cfg["public_base"])
         return HTMLResponse(html, headers=frame_headers())
 
     @app.post("/api/reports/{token}/answers")

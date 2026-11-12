@@ -6,6 +6,7 @@ import os
 from html import escape as e
 from urllib.parse import urlparse
 
+from . import theme
 from .pagespeed import rate
 from .questions import QUESTIONS
 
@@ -119,7 +120,7 @@ def _card(f, good=False):
     return "".join(parts) + "</div>"
 
 
-def to_html(res: dict, endpoint: str = "", share_url: str = "") -> str:
+def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = "") -> str:
     if not res.get("ok"):
         return f"<p>We could not check this site: {e(res.get('error', ''))}</p>"
     s, fs = res["scores"], res["findings"]
@@ -165,32 +166,34 @@ def to_html(res: dict, endpoint: str = "", share_url: str = "") -> str:
                  f"<table><tr><th>Page</th><th>Title</th><th>Main headline</th></tr>{rows}</table></details>")
     h.append("<div class=cta>" + questions_section(res, endpoint) + "<p class=small>This check shows what is visible from the outside. "
              "A strategy session goes deeper: your traffic, your search data and a plan in the right order.</p></div>")
-    css = ("body{font:16px/1.55 system-ui,sans-serif;max-width:760px;margin:0 auto;padding:1.5rem 16px;color:#1c2330;background:#fff}"
-           "h1{margin:0}h2{margin:2rem 0 .5rem}.sub{color:#5b6573;margin:.2rem 0 1rem}"
-           ".hero{display:flex;gap:1.2rem;align-items:center;background:#f4f6f9;border-radius:14px;padding:1rem 1.2rem}"
-           ".big{font-size:3rem;font-weight:800;line-height:1}.big small{font-size:1rem;color:#5b6573}"
+    css = ("body{font:16px/1.55 var(--body);max-width:760px;margin:0 auto;padding:1.5rem 16px;color:var(--text);background:#fff}"
+           "h1,h2,h3,.big,.score,.btn,.cta a,.chip,summary{font-family:var(--head)}"
+           ".logo{display:block;margin:0 0 1.2rem}.logo img{height:34px;width:auto}"
+           "h1{margin:0;color:var(--ink);font-weight:700}h2{margin:2rem 0 .5rem;color:var(--ink);font-weight:600}.sub{color:var(--muted);margin:.2rem 0 1rem}"
+           ".hero{display:flex;gap:1.2rem;align-items:center;background:var(--card);border-radius:var(--r);padding:1rem 1.2rem;border-bottom:4px solid var(--gold)}"
+           ".big{font-size:3rem;font-weight:800;line-height:1;color:var(--ink)}.big small{font-size:1rem;color:var(--muted);font-weight:600}"
            ".grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;margin-top:1rem}"
-           ".area{background:#f4f6f9;border-radius:12px;padding:.8rem}.bar{height:8px;background:#dde2ea;border-radius:9px;margin:.4rem 0}"
-           ".bar i{display:block;height:100%;background:#e8590c;border-radius:9px}.area span{font-size:.85rem;color:#5b6573}"
-           ".f{border-left:4px solid #f59f00;background:#fafbfc;padding:.6rem .9rem;margin:.6rem 0;border-radius:0 10px 10px 0}"
-           ".f.fail{border-color:#e03131}.f.good{border-color:#2f9e44}.f p{margin:.3rem 0}.ev{color:#5b6573;font-size:.92rem}"
-           "table{width:100%;border-collapse:collapse;font-size:.92rem}td,th{text-align:left;padding:.4rem;border-bottom:1px solid #e3e7ee}"
-           ".cta{margin-top:2rem;background:#1c2330;color:#fff;border-radius:14px;padding:1rem 1.4rem}"
+           ".area{background:var(--card);border-radius:12px;padding:.8rem}.bar{height:8px;background:var(--line);border-radius:9px;margin:.4rem 0}"
+           ".bar i{display:block;height:100%;background:var(--gold);border-radius:9px}.area span{font-size:.85rem;color:var(--muted)}"
+           ".f{border-left:4px solid var(--gold);background:#fffdf5;padding:.6rem .9rem;margin:.6rem 0;border-radius:0 10px 10px 0}"
+           ".f.fail{border-color:#e03131}.f.good{border-color:#2f9e44}.f p{margin:.3rem 0}.ev{color:var(--muted);font-size:.92rem}"
+           "table{width:100%;border-collapse:collapse;font-size:.92rem}td,th{text-align:left;padding:.4rem;border-bottom:1px solid var(--line)}"
+           "details{background:var(--card);border-radius:12px;padding:.7rem 1rem;margin-top:.7rem}summary{cursor:pointer;font-weight:600}"
+           ".cta{margin-top:2rem;background:var(--ink);color:#fff;border-radius:var(--r);padding:1rem 1.4rem}"
            ".q fieldset{border:0;padding:0;margin:0 0 1rem}.q legend{font-weight:700;margin-bottom:.4rem}"
-           ".q label{display:block;padding:.35rem 0}.q textarea{width:100%;border-radius:10px;border:0;padding:.6rem;font:inherit;box-sizing:border-box}"
-           ".cta .sub{color:#c6cdd8}.small{font-size:.85rem;color:#c6cdd8;margin-top:1rem}button.btn{border:0;cursor:pointer;font:inherit}"
-           ".btn{display:inline-block;background:#e8590c;color:#fff;padding:.7rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:700}"
-           ".cta a{display:inline-block;background:#e8590c;color:#fff;padding:.7rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:700}"
-           ".small2{font-size:.9rem;color:#5b6573}.small2 input{width:60%;max-width:100%;padding:.3rem;border-radius:8px;border:1px solid #ccd3dd;font:inherit}.small2 button{padding:.3rem .8rem;border-radius:8px;border:0;background:#1c2330;color:#fff;cursor:pointer}"
-           ".chips{margin:1rem 0 0}.chip{display:inline-block;font-size:.8rem;font-weight:700;padding:.15rem .6rem;border-radius:99px;color:#fff}"
-           ".chip.g{background:#2f9e44}.chip.a{background:#e67700}.chip.r{background:#e03131}"
-           ".ic{display:inline-block;width:1.4rem;height:1.4rem;line-height:1.4rem;text-align:center;border-radius:50%;color:#fff;margin-right:.5rem;font-size:.8rem;background:#f59f00}"
+           ".q label{display:block;padding:.35rem 0}.q input{accent-color:var(--gold)}.q textarea{width:100%;border-radius:10px;border:0;padding:.6rem;font:inherit;box-sizing:border-box}"
+           ".cta .sub{color:#d9d3bd}.small{font-size:.85rem;color:#d9d3bd;margin-top:1rem}button.btn{border:1px solid var(--border);cursor:pointer;font:inherit;font-family:var(--head)}"
+           ".btn,.cta a{display:inline-block;background:var(--gold);color:var(--text);padding:.7rem 1.3rem;border-radius:var(--r);border:1px solid var(--border);text-decoration:none;font-weight:600}"
+           ".small2{font-size:.9rem;color:#d9d3bd}.small2 input{width:60%;max-width:100%;padding:.3rem;border-radius:8px;border:1px solid #cfc8ad;font:inherit}.small2 button{padding:.3rem .8rem;border-radius:8px;border:0;background:var(--gold);color:var(--text);cursor:pointer}"
+           ".chips{margin:1rem 0 0}.chip{display:inline-block;font-size:.8rem;font-weight:600;padding:.15rem .6rem;border-radius:99px;color:#fff}"
+           ".chip.g{background:#2f9e44}.chip.a{background:#b45f06}.chip.r{background:#e03131}"
+           ".ic{display:inline-block;width:1.4rem;height:1.4rem;line-height:1.4rem;text-align:center;border-radius:50%;color:#fff;margin-right:.5rem;font-size:.8rem;background:#b45f06}"
            ".good .ic{background:#2f9e44}.fail .ic{background:#e03131}"
-           ".cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}.sp{background:#f4f6f9;border-radius:14px;padding:1rem}"
-           ".sp h3{margin:0 0 .4rem}.score{font-size:2.6rem;font-weight:800;line-height:1}.score small{font-size:1rem;opacity:.6}"
-           ".score.g{color:#2f9e44}.score.a{color:#e67700}.score.r{color:#e03131}.sp small{color:#5b6573}"
-           "@media(prefers-color-scheme:dark){body{background:#12161d;color:#e8ecf2}.hero,.area,.sp{background:#1c222c}.f{background:#181d26}"
-           ".sub,.ev,.area span,.big small{color:#9aa5b5}td,th{border-color:#2a3240}}")
+           ".cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}.sp{background:var(--card);border-radius:var(--r);padding:1rem}"
+           ".sp h3{margin:0 0 .4rem;color:var(--ink)}.score{font-size:2.6rem;font-weight:800;line-height:1}.score small{font-size:1rem;opacity:.6}"
+           ".score.g{color:#2f9e44}.score.a{color:#b45f06}.score.r{color:#e03131}.sp small{color:var(--muted)}")
+    h.insert(0, "<a class=logo href='https://athanmarketing.com' target=_blank rel=noopener>"
+                "<img src='https://athanmarketing.com/wp-content/uploads/2025/01/cropped-ATHAN-180x60.webp' alt='Athan Marketing'></a>")
     return ("<!doctype html><html lang=en><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
-            f"<title>Website health check</title><meta name=robots content=noindex><style>{css}</style><body>" + "".join(h) +
+            f"<title>Website health check</title><meta name=robots content=noindex><style>{theme.css(assets)}{css}</style><body>" + "".join(h) +
             HEIGHT_JS + "</body></html>")
