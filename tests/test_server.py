@@ -101,6 +101,7 @@ def test_validation_and_bots(tmp_path):
 
 def test_pages_and_widget(tmp_path):
     c, _ = make(tmp_path)
+    assert c.get("/").status_code == 200 and "2 free checks" in c.get("/").text
     e = c.get("/embed")
     assert e.status_code == 200 and "2 free checks" in e.text and "__PRIVACY__" not in e.text
     assert "frame-ancestors" in e.headers["content-security-policy"]

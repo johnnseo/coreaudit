@@ -58,6 +58,7 @@ def create_app(cfg=None, run_audit=None):
     def health():
         return {"ok": True}
 
+    @app.get("/", response_class=HTMLResponse)
     @app.get("/embed", response_class=HTMLResponse)
     def embed():
         ts = ""
