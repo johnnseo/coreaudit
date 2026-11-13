@@ -9,7 +9,9 @@
 /*THEME*/
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:17px/1.6 var(--body)}
-.wrap{max-width:760px;margin:0 auto;padding:20px 16px 56px}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 24px 64px}
+.lead,.fine{max-width:760px}
+@media(min-width:900px){.area-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}.area-grid .area{margin-top:0}}
 h1,h2,h3,button.go,a.go,.k{font-family:var(--head);color:var(--ink)}
 h1{color:var(--gold);border:0}h2{margin-top:2.6rem}button.go,a.go,.k{color:#050505}h3{color:#fff}
 .logo img{height:96px;width:auto;display:block;margin:0 0 1rem -6px}
@@ -72,7 +74,7 @@ button.go[disabled]{opacity:.6}
 
   <h2>Do it while you watch</h2>
   <p class="lead" style="margin-bottom:.4rem">One test for each part. Pause the video, try it on your business, tick it when you have done it.</p>
-  __TESTS__
+  <div class="area-grid">__TESTS__</div>
 
   <h2>Keep the checklist</h2>
   <p class="lead" style="margin-bottom:.8rem">The same tests on one printable page, with space to write what you find.</p>
