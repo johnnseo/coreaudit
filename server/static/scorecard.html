@@ -8,9 +8,10 @@
 <style>
 /*THEME*/
 *{box-sizing:border-box}
-body{margin:0;background:#fff;color:var(--text);font:16px/1.55 var(--body);padding:20px 16px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 var(--body);padding:20px 16px}
 .wrap{max-width:640px;margin:0 auto}
 h1,h2,h3,button.go,a.go,.stage{font-family:var(--head);color:var(--ink)}
+h1{color:var(--gold)}button.go,a.go{color:#050505}
 h1{font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.1;margin:.2rem 0 .6rem;font-weight:700}
 h2{font-size:1.2rem;font-weight:600;margin:1.6rem 0 .6rem}
 .tag{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold-deep)}
@@ -22,25 +23,26 @@ h2{font-size:1.2rem;font-weight:600;margin:1.6rem 0 .6rem}
 .card{background:var(--card);border-radius:var(--r);padding:1.1rem 1.2rem}
 form.card{margin-top:1.2rem}
 label.f{display:block;font-weight:600;margin-bottom:.8rem}
-input[type=text],input[type=email]{width:100%;padding:.75rem;border-radius:10px;border:1px solid #cfc8ad;background:#fff;color:var(--text);font:inherit;margin-top:.25rem}
+input[type=text],input[type=email]{width:100%;padding:.75rem;border-radius:10px;border:1px solid #5a5a55;background:#2A2A28;color:#fff;font:inherit;margin-top:.25rem}
+input::placeholder{color:#8f8c80}
 input:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
 @media(max-width:560px){.row{grid-template-columns:1fr}}
 .chk{display:flex;gap:.6rem;align-items:flex-start;font-size:.92rem;color:var(--muted);margin:.6rem 0}
-.chk input{margin-top:.25rem;accent-color:var(--ink)}.chk a{color:var(--gold-deep)}
+.chk input{margin-top:.25rem;accent-color:var(--gold)}.chk a{color:var(--gold-deep)}
 button.go,a.go{display:inline-block;background:var(--gold);color:var(--text);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1.5rem;font-size:1rem;font-weight:600;cursor:pointer;text-decoration:none;margin-top:.6rem}
 button.ghost{background:transparent}
 button.go[disabled]{opacity:.6;cursor:wait}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .note,.meta{font-size:.9rem;color:var(--muted)}
-.err{background:#fff0f0;color:#9b1c1c;border-radius:10px;padding:.7rem .9rem;margin:.8rem 0;display:none}
+.err{background:#4a2a2a;color:#ffb3b3;border-radius:10px;padding:.7rem .9rem;margin:.8rem 0;display:none}
 .progress{display:flex;gap:4px;margin:0 0 6px}.progress i{flex:1;height:6px;background:var(--line);border-radius:2px}
-.progress i.done{background:var(--ink)}.progress i.now{background:var(--gold)}
+.progress i.done{background:#8a7a3a}.progress i.now{background:var(--gold)}
 .q{font-family:var(--body);font-size:1.3rem;font-weight:600;line-height:1.3;margin:10px 0 6px}
 .hint{color:var(--muted)}
 .opts{display:grid;gap:10px;margin-top:18px}
-.opt{text-align:left;background:#fff;border:1px solid #cfc8ad;border-radius:12px;padding:14px 16px;color:var(--text);font:inherit;cursor:pointer}
-.opt:hover{border-color:var(--ink);background:#fffdf5}.opt b{display:block;font-weight:600}.opt span{color:var(--muted);font-size:.92rem}
+.opt{text-align:left;background:#2A2A28;border:1px solid #5a5a55;border-radius:12px;padding:14px 16px;color:var(--text);font:inherit;cursor:pointer}
+.opt:hover{border-color:var(--gold);background:#333331}.opt b{display:block;font-weight:600}.opt span{color:var(--muted);font-size:.92rem}
 .bars{display:flex;flex-direction:column;gap:14px}
 .bar{display:grid;grid-template-columns:96px 1fr 44px;gap:12px;align-items:center}
 .bar b{font-family:var(--head);font-size:1rem;color:var(--ink)}
@@ -123,7 +125,7 @@ button.go[disabled]{opacity:.6;cursor:wait}
   function load(){
     fetch('/api/scorecard/'+token).then(function(r){return r.json()}).then(function(j){ if(j.done)render(j.result); else {i=0;ans=[];question();} });
   }
-  function color(p){return p>=.75?'#2f9e44':p>=.4?'#b45f06':'#e03131'}
+  function color(p){return p>=.75?'#4CC38A':p>=.4?'#FF9F43':'#FF6B6B'}
   function render(r){
     var c=D.cracks[r.fix_first], p=r.total/r.max_total;
     var verdict=p>=.8?'Your foundation is mostly solid. Work on the lowest area and keep tracking.':p>=.5?'The foundation holds in places and leaks in others. Fix the lowest area first.':'There are real cracks in the foundation. Fix them in order, starting with the lowest area.';

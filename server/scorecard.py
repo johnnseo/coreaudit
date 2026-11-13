@@ -88,7 +88,7 @@ def add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests_mod
     def page(token=""):
         html = (cfg["static"] / "scorecard.html").read_text()
         data = {"cracks": CRACKS, "q": Q, "review": cfg["review_url"], "token": token}
-        return (html.replace("/*THEME*/", theme.css()).replace("__PRIVACY__", escape(cfg["privacy_url"]))
+        return (html.replace("/*THEME*/", theme.css() + theme.dark_css()).replace("__PRIVACY__", escape(cfg["privacy_url"]))
                 .replace("__DATA__", json.dumps(data).replace("</", "<\\/")))
 
     @app.get("/scorecard", response_class=HTMLResponse)
