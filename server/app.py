@@ -74,7 +74,7 @@ def create_app(cfg=None, run_audit=None, ai_reader=None):
                   f'<div class="cf-turnstile" data-sitekey="{cfg["turnstile_site"]}"></div>')
         html = (STATIC / "embed.html").read_text()
         html = html.replace("__PRIVACY__", cfg["privacy_url"]).replace("__REVIEW__", cfg["review_url"]).replace("__TURNSTILE__", ts)
-        html = html.replace("/*THEME*/", theme.css())
+        html = html.replace("/*THEME*/", theme.css() + theme.dark_css())
         resp = HTMLResponse(html, headers=frame_headers())
         hooks["seen"](req, resp, "audit")
         return resp
@@ -192,7 +192,7 @@ def create_app(cfg=None, run_audit=None, ai_reader=None):
         res = json.loads(r["result"])
         html = to_html(res, endpoint=f"/api/reports/{token}/answers", share_url=f'{cfg["public_base"]}/r/{token}', assets=cfg["public_base"],
                        bonus_url=f'{cfg["public_base"]}/scorecard?from={token}',
-                       dark=r.get("v") in ("v2", "cache"))
+                       dark=True)
         return HTMLResponse(html, headers=frame_headers())
 
     @app.post("/api/reports/{token}/answers")

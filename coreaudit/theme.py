@@ -41,7 +41,7 @@ def dark_css() -> str:
             f"--gold-deep:{THEME['gold']};--alert:{d['alert']};--alert-text:{d['alert_text']};--good:{d['good']};--r:{THEME['radius']}}}"
             f"body{{background:{d['bg']};color:{d['text']}}}"
             ".logo{display:inline-block;background:#fff;border-radius:10px;padding:6px 12px}"
-            ".f{background:#3A3A37}.f.fail{border-color:var(--alert)}.f.good{border-color:var(--good)}.ev{color:var(--muted)}"
+            "div.f{background:#3A3A37}div.f.fail{border-color:var(--alert)}div.f.good{border-color:var(--good)}.ev{color:var(--muted)}"
             ".cta{background:#262624;border:1px solid var(--line)}.bonus{background:#3A3A37}"
             ".chip.r{background:var(--alert)}.chip.g{background:#2f9e44}.fail .ic{background:var(--alert)}.good .ic{background:#2f9e44}"
             ".score.r{color:var(--alert-text)}.score.g{color:var(--good)}.score.a{color:var(--gold-deep)}"
