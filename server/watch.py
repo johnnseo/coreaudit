@@ -36,7 +36,7 @@ def add_routes(app, cfg, db, aw, client_ip, NOINDEX, hooks, requests_mod):
         html = (static / "watch.html").read_text()
         wl = (f'<p class="quiet">If you would rather fix these with someone next to you, there is a 60-minute workshop: '
               f'<a href="{escape(cfg["workshop_url"])}">Fix Your Marketing in 60 Minutes</a>.</p>') if cfg["workshop_url"] else ""
-        html = (html.replace("/*THEME*/", theme.css()).replace("__VIDEO__", video_html()).replace("__TESTS__", tests_html())
+        html = (html.replace("/*THEME*/", theme.css() + theme.dark_css()).replace("__VIDEO__", video_html()).replace("__TESTS__", tests_html())
                 .replace("__PRIVACY__", escape(cfg["privacy_url"])).replace("__WORKSHOP__", wl))
         resp = HTMLResponse(html, headers=NOINDEX)
         hooks["seen"](req, resp, "watch")

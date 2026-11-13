@@ -85,7 +85,7 @@ Use `?src=` on the links you share (`/watch?src=youtube`, `/watch?src=ig-bio`); 
 
 **AWeber.** Sign-ups get the tag `core-checklist`. Add an automation: when that tag is applied, send an email linking to `https://audit.athanmarketing.com/checklist.pdf`. The page tells people a copy is on its way.
 
-The checklist is built from the same tests as the scorecard. To change its wording, edit `server/static/checklist.html` and regenerate `server/static/core-checklist.pdf` (print `/checklist` to PDF, A4).
+The checklist is built from the same tests as the scorecard. To change its wording, edit `server/static/checklist.html` and regenerate `server/static/core-checklist.pdf` (print `/checklist` to PDF, A4, with backgrounds on; the PDF header uses the grey-square logo so it shows on white).
 
 ## Version 2 of the website check (score first, email to unlock)
 

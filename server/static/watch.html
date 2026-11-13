@@ -8,16 +8,17 @@
 <style>
 /*THEME*/
 *{box-sizing:border-box}
-body{margin:0;background:#fff;color:var(--text);font:17px/1.6 var(--body)}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.6 var(--body)}
 .wrap{max-width:760px;margin:0 auto;padding:20px 16px 56px}
 h1,h2,h3,button.go,a.go,.k{font-family:var(--head);color:var(--ink)}
-.logo img{height:34px;width:auto;display:block;margin-bottom:1.6rem}
+h1{color:var(--gold);border:0}h2{margin-top:2.6rem}button.go,a.go,.k{color:#050505}h3{color:#fff}
+.logo img{height:96px;width:auto;display:block;margin:0 0 1rem -6px}
 .tag{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold-deep)}
 h1{font-size:clamp(1.8rem,5.5vw,2.7rem);line-height:1.12;margin:.3rem 0 .7rem;font-weight:700}
 h2{font-size:1.45rem;margin:2.6rem 0 .5rem;font-weight:600}
 h3{font-size:1.05rem;margin:0 0 .2rem;font-weight:600}
 .lead{color:var(--muted);font-size:1.15rem;margin:0 0 1.4rem}
-.video{position:relative;padding-top:56.25%;border-radius:var(--r);overflow:hidden;background:var(--ink);border-bottom:5px solid var(--gold)}
+.video{position:relative;padding-top:56.25%;border-radius:var(--r);overflow:hidden;background:#000;border-bottom:5px solid var(--gold)}
 .video iframe,.video .soon{position:absolute;inset:0;width:100%;height:100%;border:0}
 .soon{display:flex;align-items:center;justify-content:center;color:#fff;text-align:center;padding:1rem;font-family:var(--head)}
 .seen{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-top:1.2rem}
@@ -28,22 +29,23 @@ h3{font-size:1.05rem;margin:0 0 .2rem;font-weight:600}
 .k{flex:none;width:2.4rem;height:2.4rem;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:800}
 .why{margin:.1rem 0 .5rem;color:var(--muted);font-size:.95rem}
 .t{display:flex;gap:.6rem;align-items:flex-start;padding:.3rem 0;font-size:.97rem;cursor:pointer}
-.t input{margin-top:.35rem;accent-color:var(--ink);width:1.05rem;height:1.05rem;flex:none}
+.t input{margin-top:.35rem;accent-color:var(--gold);width:1.05rem;height:1.05rem;flex:none}
 form.card,.card{background:var(--card);border-radius:var(--r);padding:1.2rem}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
 @media(max-width:560px){.row{grid-template-columns:1fr}}
 label.f{display:block;font-weight:600;margin-bottom:.8rem;font-size:.95rem}
-input[type=text],input[type=email]{width:100%;padding:.75rem;border-radius:10px;border:1px solid #cfc8ad;background:#fff;font:inherit;margin-top:.25rem}
+input[type=text],input[type=email]{width:100%;padding:.75rem;border-radius:10px;border:1px solid #5a5a55;background:#2A2A28;color:#fff;font:inherit;margin-top:.25rem}
+input::placeholder{color:#8f8c80}
 input:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 .chk{display:flex;gap:.6rem;align-items:flex-start;font-size:.9rem;color:var(--muted);margin:.5rem 0}
-.chk input{margin-top:.3rem;accent-color:var(--ink)}.chk a,.quiet a{color:var(--gold-deep)}
+.chk input{margin-top:.3rem;accent-color:var(--gold)}.chk a,.quiet a{color:var(--gold-deep)}
 button.go,a.go{display:inline-block;background:var(--gold);color:var(--text);border:1px solid var(--border);border-radius:var(--r);padding:.85rem 1.4rem;font-size:1rem;font-weight:600;cursor:pointer;text-decoration:none;margin-top:.5rem}
 button.go[disabled]{opacity:.6}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
-.err{background:#fff0f0;color:#9b1c1c;border-radius:10px;padding:.7rem .9rem;margin:.6rem 0;display:none}
+.err{background:#4a2a2a;color:#ffb3b3;border-radius:10px;padding:.7rem .9rem;margin:.6rem 0;display:none}
 .done{display:none;text-align:center}
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.9rem;margin-top:.8rem}
-.step{background:#fff;border:2px solid var(--gold);border-radius:var(--r);padding:1.1rem}
+.step{background:#2A2A28;border:2px solid var(--gold);border-radius:var(--r);padding:1.1rem}
 .step p{margin:.2rem 0 .6rem;color:var(--muted);font-size:.97rem}
 .mins{font-size:.8rem;font-weight:700;color:var(--gold-deep);text-transform:uppercase;letter-spacing:.05em}
 .about{display:block;margin-top:.4rem}
@@ -53,7 +55,7 @@ button.go[disabled]{opacity:.6}
 </head>
 <body>
 <div class="wrap">
-  <a class="logo" href="https://athanmarketing.com"><img src="https://athanmarketing.com/wp-content/uploads/2025/01/cropped-ATHAN-180x60.webp" alt="Athan Marketing"></a>
+  <a class="logo" href="https://athanmarketing.com"><img src="/static/athan-logo-full.png" alt="Athan Marketing"></a>
 
   <span class="tag">Free &middot; 11 minutes</span>
   <h1>Find the cracks in your marketing in 11 minutes</h1>
