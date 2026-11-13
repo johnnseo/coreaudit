@@ -25,6 +25,7 @@ from . import config as config_mod
 from . import limits
 from . import scorecard as scorecard_mod
 from . import watch as watch_mod
+from . import v2 as v2_mod
 from .aweber import AWeber
 from .db import DB
 
@@ -32,7 +33,7 @@ STATIC = Path(__file__).parent / "static"
 NOINDEX = {"X-Robots-Tag": "noindex, nofollow", "Referrer-Policy": "no-referrer"}
 
 
-def create_app(cfg=None, run_audit=None):
+def create_app(cfg=None, run_audit=None, ai_reader=None):
     cfg = cfg or config_mod.get()
     db = DB(cfg["db_path"])
     aw = AWeber(cfg, db)
@@ -146,10 +147,10 @@ def create_app(cfg=None, run_audit=None):
         db.log_event(row.get("vid") or "", row.get("variant") or "direct", "audit", "complete")
         after_audit(token, row, res, ip)
 
-    def after_audit(token, row, res, ip):
+    def after_audit(token, row, res, ip, extra_tags=()):
         s = res["scores"]
         report_url = f'{cfg["public_base"]}/r/{token}'
-        tags = ["core-audit", f"fix-first-{s['fix_first']}", f"route-{res['lead_route']}"]
+        tags = ["core-audit", f"fix-first-{s['fix_first']}", f"route-{res['lead_route']}", *extra_tags]
         if row["consent_marketing"]:
             tags.append("newsletter-optin")
         try:
@@ -182,11 +183,16 @@ def create_app(cfg=None, run_audit=None):
     @app.get("/r/{token}", response_class=HTMLResponse)
     def report(token: str):
         r = db.get(token)
-        if not r or r["status"] != "done":
+        if r and r.get("v") in ("v2", "cache") and r["status"] != "done":
+            return RedirectResponse(f"/v2?t={token}", 302)      # not unlocked yet, or still being written
+        if not r or r["status"] != "done" or (r.get("v") in ("v2", "cache") and not r["email"]):
+            if r and r.get("v") in ("v2", "cache"):
+                return RedirectResponse(f"/v2?t={token}", 302)
             raise HTTPException(404)
         res = json.loads(r["result"])
         html = to_html(res, endpoint=f"/api/reports/{token}/answers", share_url=f'{cfg["public_base"]}/r/{token}', assets=cfg["public_base"],
-                       bonus_url=f'{cfg["public_base"]}/scorecard?from={token}')
+                       bonus_url=f'{cfg["public_base"]}/scorecard?from={token}',
+                       dark=r.get("v") in ("v2", "cache"))
         return HTMLResponse(html, headers=frame_headers())
 
     @app.post("/api/reports/{token}/answers")
@@ -232,7 +238,7 @@ def create_app(cfg=None, run_audit=None):
             if r["result"]:
                 sc = json.loads(r["result"])["scores"]["overall"]
             w.writerow([time.strftime("%Y-%m-%d %H:%M", time.gmtime(r["created"])), r["name"], r["email"], r["url"], r["city"],
-                        r["status"], r["route"], r["consent_marketing"], r["aweber"], r["answers"], sc, "audit", r.get("variant") or ""])
+                        r["status"], r["route"], r["consent_marketing"], r["aweber"], r["answers"], sc, "audit-v2" if r.get("v") in ("v2", "cache") else "audit", r.get("variant") or ""])
         for r in db.checklist_leads():
             w.writerow([time.strftime("%Y-%m-%d %H:%M", time.gmtime(r["created"])), r["name"], r["email"], "", "", "signed up", "",
                         r["consent_marketing"], r["aweber"], "", "", "checklist", r["variant"] or ""])
@@ -261,6 +267,9 @@ def create_app(cfg=None, run_audit=None):
         return aw.lists()
 
     scorecard_mod.add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests, hooks)
+    v2_mod.add_routes(app, cfg, db, client_ip, frame_headers, NOINDEX, hooks,
+                      {"pool": pool, "runner": runner, "turnstile_ok": turnstile_ok, "after_audit": after_audit,
+                       "ai_reader": ai_reader or v2_mod.default_ai_reader})
     watch_mod.add_routes(app, cfg, db, aw, client_ip, NOINDEX, hooks, requests)
     return app
 

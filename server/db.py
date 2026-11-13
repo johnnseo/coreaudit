@@ -36,7 +36,7 @@ class DB:
         self.lock = threading.Lock()
         with self.lock:
             self.c.executescript(SCHEMA)
-            for col in ("vid", "variant"):                  # older databases: add the A/B columns
+            for col in ("vid", "variant", "v"):                  # older databases: add the A/B columns
                 try:
                     self.c.execute(f"ALTER TABLE audits ADD COLUMN {col} TEXT")
                 except sqlite3.OperationalError:
@@ -84,8 +84,8 @@ class DB:
     def leads(self):
         with self.lock:
             return [dict(r) for r in self.c.execute(
-                "SELECT created,name,email,url,city,status,route,consent_marketing,aweber,answers,result,variant FROM audits "
-                "ORDER BY created DESC")]
+                "SELECT created,name,email,url,city,status,route,consent_marketing,aweber,answers,result,variant,v FROM audits "
+                "WHERE email!='' ORDER BY created DESC")]
 
     def kv_get(self, k):
         with self.lock:
@@ -141,3 +141,27 @@ class DB:
     def checklist_leads(self):
         with self.lock:
             return [dict(r) for r in self.c.execute("SELECT * FROM checklist_leads ORDER BY created DESC")]
+
+    # ---- V2 (score first, email to unlock) ----
+    def count_v2(self, domain=None, ip_hash=None, since_hours=720):
+        where, args = ["v='v2'", "status!='failed'", "created>?"], [time.time() - since_hours * 3600]
+        for col, val in (("domain", domain), ("ip_hash", ip_hash)):
+            if val is not None:
+                where.append(f"{col}=?")
+                args.append(val)
+        with self.lock:
+            return self.c.execute(f"SELECT COUNT(*) FROM audits WHERE {' AND '.join(where)}", args).fetchone()[0]
+
+    def cached_result(self, url, days=7):
+        with self.lock:
+            r = self.c.execute("SELECT result FROM audits WHERE url=? AND status IN ('done','enriching') AND result IS NOT NULL "
+                               "AND created>? ORDER BY created DESC LIMIT 1", (url, time.time() - days * 86400)).fetchone()
+        return r["result"] if r else None
+
+    def ab_totals(self):
+        with self.lock:
+            rows = self.c.execute(
+                "SELECT magnet, COUNT(DISTINCT CASE WHEN event='view' THEN vid END) views, "
+                "COUNT(DISTINCT CASE WHEN event='lead' THEN vid END) leads, "
+                "COUNT(DISTINCT CASE WHEN event='complete' THEN vid END) done FROM events GROUP BY magnet ORDER BY magnet").fetchall()
+        return [dict(r) for r in rows]

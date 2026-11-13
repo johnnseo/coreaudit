@@ -86,3 +86,27 @@ Use `?src=` on the links you share (`/watch?src=youtube`, `/watch?src=ig-bio`); 
 **AWeber.** Sign-ups get the tag `core-checklist`. Add an automation: when that tag is applied, send an email linking to `https://audit.athanmarketing.com/checklist.pdf`. The page tells people a copy is on its way.
 
 The checklist is built from the same tests as the scorecard. To change its wording, edit `server/static/checklist.html` and regenerate `server/static/core-checklist.pdf` (print `/checklist` to PDF, A4).
+
+## Version 2 of the website check (score first, email to unlock)
+
+`https://audit.athanmarketing.com/v2` is the second version, in the dark brand look:
+1. They enter the website only (city optional).
+2. After about a minute they see their overall percentage and a percentage for each of C, O, R and E (red/orange when weak), a count of cracks, and mobile speed.
+3. The full report is unlocked with first name, email and consent. Only then does Claude read the homepage copy (the only step that costs tokens), and the report is written and emailed.
+
+Version 1 (`/embed`, email first) is unchanged.
+
+**A/B test.** Put this on the WordPress page; each new visitor is sent to version 1 or version 2 and stays on the same one for 60 days:
+
+```html
+<div id="core-audit" data-magnet="ab"></div>
+<script src="https://audit.athanmarketing.com/widget.js" async></script>
+```
+
+Or link to `https://audit.athanmarketing.com/get?src=youtube`. `?v=v1` or `?v=v2` forces a version. `AB_V2_SHARE` (default 0.5) sets how many go to version 2. Read the result at `/admin/ab?key=YOUR_ADMIN_KEY`, first table: **emails per 100 visitors** for `audit` (version 1) and `audit-v2`. Judge on that, then on how many book a call. The leads CSV has `magnet` = `audit` or `audit-v2`.
+
+**Limits (version 2).** 3 checks per company per 30 days (`V2_MAX_PER_DOMAIN_MONTH`), 3 reports per email per 30 days (`V2_MAX_PER_EMAIL_MONTH`), `MAX_PER_IP_DAY` per network per day, and `MAX_AUDITS_PER_DAY` (default 150) for the whole service. The same site checked again within 7 days reuses the saved result and costs nothing.
+
+**Turn on Turnstile for version 2.** The check now runs before we have an email, so set `TURNSTILE_SITEKEY` and `TURNSTILE_SECRET` in Render (free at Cloudflare) to keep bots from running up your PageSpeed, DataForSEO and Claude usage.
+
+**Token cost.** One Claude call per unlocked report (homepage text, about 2,500 words in, up to 1,500 tokens out). To make it cheaper, set `COREAUDIT_MODEL` to `claude-haiku-5-5` in Render; the copy reading may be a little less sharp.

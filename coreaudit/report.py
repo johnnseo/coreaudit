@@ -120,7 +120,7 @@ def _card(f, good=False):
     return "".join(parts) + "</div>"
 
 
-def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = "", bonus_url: str = "") -> str:
+def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = "", bonus_url: str = "", dark: bool = False) -> str:
     if not res.get("ok"):
         return f"<p>We could not check this site: {e(res.get('error', ''))}</p>"
     s, fs = res["scores"], res["findings"]
@@ -134,7 +134,7 @@ def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = ""
          "<div class=grid>"]
     for c in "CORE":
         sc = s[c]["score"]
-        h.append(f"<div class=area><b>{NAMES[c]}</b><div class=bar><i style='width:{sc}%'></i></div>"
+        h.append(f"<div class=area><b>{NAMES[c]}</b><div class=bar><i class='{"lo" if sc < 40 else ""}' style='width:{sc}%'></i></div>"
                  f"<span>{sc}/100 &middot; {label(sc)}</span></div>")
     h.append("</div>")
     h.append(f"<p class=chips><span class='chip g'>{len(good)} working</span> "
@@ -202,5 +202,5 @@ def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = ""
     h.insert(0, "<a class=logo href='https://athanmarketing.com' target=_blank rel=noopener>"
                 "<img src='https://athanmarketing.com/wp-content/uploads/2025/01/cropped-ATHAN-180x60.webp' alt='Athan Marketing'></a>")
     return ("<!doctype html><html lang=en><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
-            f"<title>Website health check</title><meta name=robots content=noindex><style>{theme.css(assets)}{css}</style><body>" + "".join(h) +
+            f"<title>Website health check</title><meta name=robots content=noindex><style>{theme.css(assets)}{css}{theme.dark_css() if dark else ''}</style><body>" + "".join(h) +
             HEIGHT_JS + "</body></html>")

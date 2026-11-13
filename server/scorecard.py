@@ -189,14 +189,21 @@ def add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests_mod
             raise HTTPException(404)
         rows = db.ab_summary()
         pct = lambda a, b: f"{round(100 * a / b)}%" if b else "-"
+        per100 = lambda a, b: f"{round(100 * a / b, 1)}" if b else "-"
         tr = "".join(
             f"<tr><td>{escape(r['variant'])}</td><td>{escape(r['magnet'])}</td><td>{r['views']}</td><td>{r['leads']}</td>"
-            f"<td>{r['done']}</td><td>{pct(r['leads'], r['views'])}</td><td>{pct(r['done'], r['leads'])}</td></tr>" for r in rows)
+            f"<td>{r['done']}</td><td>{per100(r['leads'], r['views'])}</td></tr>" for r in rows)
+        tot = "".join(
+            f"<tr><td><b>{escape(r['magnet'])}</b></td><td>{r['views']}</td><td>{r['leads']}</td><td>{r['done']}</td>"
+            f"<td><b>{per100(r['leads'], r['views'])}</b></td></tr>" for r in db.ab_totals())
         html = ("<!doctype html><meta name=robots content=noindex><meta charset=utf-8><title>Lead magnet test</title>"
                 "<style>body{font:16px system-ui;max-width:820px;margin:2rem auto;padding:0 1rem}td,th{padding:.5rem;border-bottom:1px solid #ddd;text-align:left}</style>"
-                "<h1>Lead magnet test</h1><p>Variant is the group a visitor was put in by <code>/get</code>. "
+                "<h1>Lead magnet test</h1><h2>All sources together</h2>"
+                "<table><tr><th>Page</th><th>Visitors</th><th>Gave email</th><th>Finished a check</th><th>Emails per 100 visitors</th></tr>" + tot + "</table>"
+                "<p><b>audit</b> is version 1 (email first). <b>audit-v2</b> is version 2 (score first, email to unlock). "
+                "In version 2, &quot;finished a check&quot; happens before the email.</p><h2>By source</h2><p>Variant is the group a visitor was put in by <code>/get</code>. "
                 "<b>direct</b> means they opened that page without going through the split.</p>"
                 "<table><tr><th>Variant</th><th>Page</th><th>Visitors</th><th>Gave email</th><th>Finished</th>"
-                "<th>Visitor to email</th><th>Email to finished</th></tr>" + tr + "</table>"
+                "<th>Emails per 100 visitors</th></tr>" + tr + "</table>"
                 "<p>Wait for roughly 100 visitors in each group before picking a winner. Fewer than that is mostly luck.</p>")
         return HTMLResponse(html, headers=NOINDEX)

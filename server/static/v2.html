@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>C.O.R.E. Score | Athan Marketing</title>
+<style>
+/*THEME*/
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 var(--body);padding:20px 16px}
+.wrap{max-width:680px;margin:0 auto}
+h1,h2,h3,button.go,a.go,.k,.pct,.big{font-family:var(--head)}
+h1{font-size:clamp(1.8rem,5.5vw,2.5rem);line-height:1.12;margin:.3rem 0 .6rem;font-weight:700;color:#fff}
+h2{font-size:1.3rem;margin:1.6rem 0 .5rem;font-weight:600;color:#fff}
+h3{margin:0 0 .3rem;font-weight:600;color:#fff}
+.tag{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)}
+.lead{color:var(--muted);font-size:1.1rem;margin:0 0 1.2rem}
+.card{background:var(--card);border-radius:var(--r);padding:1.2rem}
+.core{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin:1.2rem 0}
+.core div{background:var(--card);border-radius:12px;padding:.6rem;text-align:center;font-size:.85rem;color:var(--muted);border-bottom:3px solid var(--gold)}
+.core b{display:block;font-family:var(--head);font-size:1.6rem;color:var(--gold);line-height:1}
+@media(max-width:480px){.core{grid-template-columns:repeat(2,1fr)}}
+label.f{display:block;font-weight:600;margin-bottom:.8rem}
+input[type=text],input[type=email]{width:100%;padding:.8rem;border-radius:10px;border:1px solid #5a5a55;background:#2b2b29;color:#fff;font:inherit;margin-top:.25rem}
+input::placeholder{color:#8f8c80}
+input:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}@media(max-width:560px){.row{grid-template-columns:1fr}}
+.chk{display:flex;gap:.6rem;align-items:flex-start;font-size:.9rem;color:var(--muted);margin:.5rem 0}
+.chk input{margin-top:.3rem;accent-color:var(--gold)}.chk a{color:var(--gold)}
+button.go,a.go{display:inline-block;background:var(--gold);color:#050505;border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1.5rem;font-size:1rem;font-weight:600;cursor:pointer;text-decoration:none;margin-top:.5rem}
+button.go[disabled]{opacity:.6;cursor:wait}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.err{background:#4a2420;color:#ffb4a3;border-radius:10px;padding:.7rem .9rem;margin:.8rem 0;display:none}
+.note{font-size:.9rem;color:var(--muted)}
+.screen{display:none}
+.bar{height:10px;background:#4C4C47;border-radius:9px;overflow:hidden;margin:.6rem 0}.bar i{display:block;height:100%;width:6%;background:var(--gold);transition:width .6s}
+.stage{font-family:var(--head);font-size:1.05rem}
+.host{color:var(--muted);margin:0 0 1rem}
+.hero{display:flex;gap:1.2rem;align-items:center;margin-bottom:1rem}
+.big{font-size:3.4rem;font-weight:800;line-height:1}.big small{font-size:1.1rem;color:var(--muted);font-weight:600}
+.rows{display:flex;flex-direction:column;gap:1rem}
+.r{display:grid;grid-template-columns:2.2rem 1fr 3.4rem;gap:.8rem;align-items:center}
+.k{width:2.2rem;height:2.2rem;border-radius:50%;background:var(--gold);color:#050505;display:flex;align-items:center;justify-content:center;font-weight:800}
+.nm{font-weight:600;display:flex;justify-content:space-between}.nm span{color:var(--muted);font-weight:400;font-size:.85rem}
+.pct{font-weight:800;font-size:1.25rem;text-align:right}
+.lo .fill{background:var(--alert)}.lo .pct{color:var(--alert-text)}
+.mid .fill{background:var(--gold)}.mid .pct{color:var(--gold)}
+.hi .fill{background:var(--good)}.hi .pct{color:var(--good)}
+.chips{display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0 0}
+.chip{border-radius:99px;padding:.25rem .8rem;font-size:.85rem;font-weight:600}
+.chip.bad{background:var(--alert);color:#fff}.chip.ok{background:#2f9e44;color:#fff}.chip.warn{background:var(--gold);color:#050505}
+.locked{margin-top:1.2rem;border:2px solid var(--gold)}
+.lockl{list-style:none;padding:0;margin:.6rem 0 1rem;display:grid;gap:.35rem;color:var(--muted);font-size:.95rem}
+.lockl li:before{content:"\1F512";margin-right:.5rem;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="screen" id="s-intro" style="display:block">
+  <span class="tag">Free &middot; about 2 minutes</span>
+  <h1>How strong is your marketing foundation?</h1>
+  <p class="lead">Enter your website. In about a minute you see your C.O.R.E. score for each part of your marketing. The full report is free with your email.</p>
+  <div class="core"><div><b>C</b>Client</div><div><b>O</b>Offer</div><div><b>R</b>Route</div><div><b>E</b>Engine</div></div>
+  <form class="card" id="f">
+    <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website2" tabindex="-1" autocomplete="off"></label></div>
+    <label class="f">Your website <input type="text" name="url" placeholder="yourbusiness.com" inputmode="url" autocomplete="url" required></label>
+    <label class="f">City <small>(optional, for local businesses)</small> <input type="text" name="city" autocomplete="address-level2"></label>
+    __TURNSTILE__
+    <div class="err" id="err" role="alert"></div>
+    <button class="go" id="go" type="submit">Check my website</button>
+    <p class="note" style="margin-bottom:0">We only look at what any visitor can see, so we never need a login. Each company gets __DOMAIN_LIMIT__ free checks a month.</p>
+  </form>
+</div>
+
+<div class="screen" id="s-prog">
+  <h2 id="ptitle">Checking your website</h2>
+  <div class="bar"><i id="bar"></i></div>
+  <p class="stage" id="stage">Starting</p>
+  <p class="note">Please keep this page open. This usually takes one to two minutes.</p>
+</div>
+
+<div class="screen" id="s-result">
+  <span class="tag">Your C.O.R.E. score</span>
+  <p class="host" id="host"></p>
+  <div class="card">
+    <div class="hero"><div class="big" id="overall"></div><div id="verdict"></div></div>
+    <div class="rows" id="rows"></div>
+    <div class="chips" id="chips"></div>
+    <p class="note" id="strength" style="margin:.8rem 0 0"></p>
+  </div>
+  <div class="card locked">
+    <h2 style="margin-top:0">Get your full report, free</h2>
+    <ul class="lockl">
+      <li>Every crack we found, with the exact text and how to fix it</li>
+      <li>What you are doing well, so you keep it</li>
+      <li>Speed and Core Web Vitals on mobile and desktop</li>
+      <li>How people find you on Google, and your Google Business Profile</li>
+      <li>A plain-English reading of your homepage copy</li>
+    </ul>
+    <form id="u">
+      <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website2" tabindex="-1" autocomplete="off"></label></div>
+      <div class="row">
+        <label class="f">First name <input type="text" name="name" autocomplete="given-name" required></label>
+        <label class="f">Email, where your report goes <input type="email" name="email" autocomplete="email" required></label>
+      </div>
+      <label class="chk"><input type="checkbox" name="privacy" required><span>I agree to the <a href="__PRIVACY__" target="_blank" rel="noopener">privacy policy</a>. Athan Marketing may email me my report and follow-up about my results. <b>(required)</b></span></label>
+      <label class="chk"><input type="checkbox" name="marketing"><span>Also send me occasional marketing tips. Unsubscribe any time. (optional)</span></label>
+      <div class="err" id="uerr" role="alert"></div>
+      <button class="go" id="ugo" type="submit">Unlock my full report</button>
+    </form>
+  </div>
+</div>
+
+<div class="card screen" id="s-limit">
+  <h2 id="limit-title" style="margin-top:0"></h2>
+  <p id="limit-text" class="lead"></p>
+  <a class="go" href="__REVIEW__" target="_blank" rel="noopener">Book a free review call</a>
+</div>
+
+</div>
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var SRC=new URLSearchParams(location.search).get('src')||'', TOK=new URLSearchParams(location.search).get('t')||'';
+  var steps=["Reading your website","Measuring speed on mobile and desktop","Checking your pages and headlines","Looking up your Google Business Profile","Seeing how people find you on Google","Writing your report","Reading your copy like a visitor would"];
+  function post(){try{parent.postMessage({type:'core-audit-height',height:document.documentElement.scrollHeight},'*')}catch(e){}}
+  if(window.ResizeObserver)new ResizeObserver(post).observe(document.body);window.addEventListener('load',post);
+  function show(id){['s-intro','s-prog','s-result','s-limit'].forEach(function(x){$(x).style.display=(x===id?'block':'none')});window.scrollTo(0,0);post();}
+  function err(id,m){var e=$(id);e.textContent=m;e.style.display='block';post();}
+  function showLimit(j){$('limit-title').textContent=j.title;$('limit-text').textContent=j.message;show('s-limit');}
+  function J(r){return r.json().then(function(j){return{s:r.status,j:j}})}
+
+  $('f').addEventListener('submit',function(ev){
+    ev.preventDefault();$('err').style.display='none';
+    var d=new FormData(ev.target), b={url:(d.get('url')||'').trim(),city:(d.get('city')||'').trim(),hp:d.get('website2')||'',src:SRC,turnstile:d.get('cf-turnstile-response')||''};
+    if(!b.url)return err('err','Please enter your website.');
+    $('go').disabled=true;
+    fetch('/api/v2/audits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(J).then(function(x){
+      $('go').disabled=false;
+      if(x.s===200||x.s===202){TOK=x.j.token;history.replaceState(null,'','?t='+TOK+(SRC?'&src='+encodeURIComponent(SRC):''));return track('check');}
+      if(x.s===429&&x.j.limit)return showLimit(x.j);
+      err('err',x.j.message||'Something went wrong. Please try again.');
+    }).catch(function(){$('go').disabled=false;err('err','We could not reach the server. Please try again.');});
+  });
+
+  function track(mode){
+    $('ptitle').textContent=mode==='unlock'?'Writing your full report':'Checking your website';
+    show('s-prog');var n=0;
+    (function tick(){
+      fetch('/api/v2/audits/'+TOK).then(J).then(function(x){
+        var j=x.j;
+        if(x.s===404){return show('s-intro');}
+        if(j.stage){var i=steps.indexOf(j.stage);$('stage').textContent=j.stage;$('bar').style.width=(i<0?10:Math.min(95,12+i*14))+'%';}
+        if(j.status==='failed'){show('s-intro');return err('err',j.message||'We could not check that website.');}
+        if(mode==='check'&&j.status==='done'){return result(j.teaser,j.unlocked);}
+        if(mode==='unlock'&&j.status==='done'){$('bar').style.width='100%';return location.href='/r/'+TOK;}
+        if(++n>150){show('s-intro');return err('err','This is taking longer than expected. Please try again in a few minutes.');}
+        setTimeout(tick,2500);
+      }).catch(function(){setTimeout(tick,3000)});
+    })();
+  }
+
+  function level(p){return p<40?'lo':p<70?'mid':'hi'}
+  function result(t,unlocked){
+    if(unlocked)return location.href='/r/'+TOK;
+    $('host').textContent=t.host;
+    $('overall').innerHTML=t.overall+'<small>%</small>';
+    $('verdict').innerHTML='<b>Start with '+t.areas.filter(function(a){return a.k===t.fix_first})[0].name+'.</b><br><span class="note">It is your lowest score, and a weak area leaks into the ones after it.</span>';
+    var sub={C:'Who you serve',O:'What you sell',R:'How they reach you',E:'What you track and repeat'};
+    $('rows').innerHTML=t.areas.map(function(a){return '<div class="r '+level(a.score)+'"><div class="k">'+a.k+'</div><div><div class="nm">'+a.name+'<span>'+sub[a.k]+'</span></div><div class="bar"><i class="fill" style="width:'+a.score+'%"></i></div></div><div class="pct">'+a.score+'%</div></div>'}).join('');
+    var chips='';
+    if(t.high)chips+='<span class="chip bad">'+t.high+' high-impact '+(t.high===1?'crack':'cracks')+'</span>';
+    if(t.to_fix)chips+='<span class="chip warn">'+t.to_fix+' to fix or improve</span>';
+    if(t.mobile_speed!=null)chips+='<span class="chip '+(t.mobile_speed>=90?'ok':t.mobile_speed>=50?'warn':'bad')+'">Mobile speed '+t.mobile_speed+'/100</span>';
+    $('chips').innerHTML=chips;
+    $('strength').textContent=t.strength?'Working well: '+t.strength+'.':'';
+    show('s-result');
+  }
+
+  $('u').addEventListener('submit',function(ev){
+    ev.preventDefault();$('uerr').style.display='none';
+    var d=new FormData(ev.target), b={name:(d.get('name')||'').trim(),email:(d.get('email')||'').trim(),consent_privacy:!!d.get('privacy'),consent_marketing:!!d.get('marketing'),hp:d.get('website2')||''};
+    if(!b.name||!b.email)return err('uerr','Please fill in your first name and email.');
+    if(!b.consent_privacy)return err('uerr','Please tick the privacy box so we can send your report.');
+    $('ugo').disabled=true;
+    fetch('/api/v2/audits/'+TOK+'/unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(J).then(function(x){
+      $('ugo').disabled=false;
+      if(x.s===200||x.s===202)return track('unlock');
+      if(x.s===429&&x.j.limit)return showLimit(x.j);
+      err('uerr',x.j.message||'Something went wrong. Please try again.');
+    }).catch(function(){$('ugo').disabled=false;err('uerr','We could not reach the server. Please try again.');});
+  });
+
+  if(TOK){ fetch('/api/v2/audits/'+TOK).then(J).then(function(x){
+      if(x.s!==200)return; var j=x.j;
+      if(j.unlocked&&j.status==='done')return location.href='/r/'+TOK;
+      if(j.unlocked)return track('unlock');
+      if(j.status==='done')return result(j.teaser,false);
+      track('check');}); }
+})();
+</script>
+</body>
+</html>
