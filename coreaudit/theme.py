@@ -30,7 +30,7 @@ def css(assets: str = "") -> str:
             "--body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif}")
 
 
-DARK = {"bg": "#111111", "card": "#1C1C1C", "line": "#3A3A38", "text": "#FFFFFF", "muted": "#CFCBBB",
+DARK = {"bg": "#343432", "card": "#3D3D3A", "line": "#4C4C47", "text": "#FFFFFF", "muted": "#CFCBBB",
         "alert": "#FF6B6B", "orange": "#FF9F43", "good": "#4CC38A"}
 
 # The same reading scale as the audits Athan Marketing sends to clients
@@ -52,7 +52,7 @@ def scale_html() -> str:
 
 
 def dark_css() -> str:
-    """Dark brand look, from the Athan Marketing client audits: near-black page, gold headings, red/orange for what needs attention."""
+    """Dark brand look: the grey from athanmarketing.com, gold headings, red/orange for what needs attention."""
     d = DARK
     return (f":root{{--bg:{d['bg']};--text:{d['text']};--ink:{d['text']};--muted:{d['muted']};--card:{d['card']};--line:{d['line']};"
             f"--gold-deep:{THEME['gold']};--alert:{d['alert']};--alert-text:{d['alert']};--orange:{d['orange']};--good:{d['good']};--r:{THEME['radius']}}}"
@@ -60,8 +60,8 @@ def dark_css() -> str:
             "h2{color:var(--gold);border-bottom:1px solid var(--gold);padding-bottom:.3rem}.cta h2,.bonus h2,.card h2{border:0}"
             ".rh{border-bottom:1px solid var(--gold);padding-bottom:.4rem;margin-bottom:1.4rem;font-size:.9rem;color:var(--muted)}.rh b{color:var(--gold)}"
             ".rf{border-top:1px solid var(--gold);margin-top:2.5rem;padding-top:1rem}.rf img{height:44px;width:auto;display:block}"
-            "div.f{background:#222}div.f.fail{border-color:var(--alert)}div.f.good{border-color:var(--good)}.ev{color:var(--muted)}"
-            ".cta{background:#171717;border:1px solid var(--line)}.bonus{background:#171717}"
+            "div.f{background:#3A3A37}div.f.fail{border-color:var(--alert)}div.f.good{border-color:var(--good)}.ev{color:var(--muted)}"
+            ".cta{background:#2A2A28;border:1px solid var(--line)}.bonus{background:#2A2A28}"
             ".hero{background:transparent;border:1px solid var(--line);border-bottom:1px solid var(--line)}"
             ".hero.lo{border-color:var(--alert)}.hero.mid{border-color:var(--orange)}.hero.hi{border-color:var(--good)}"
             ".hero.lo .big{color:var(--alert)}.hero.mid .big{color:var(--orange)}.hero.hi .big{color:var(--good)}.lab{font-weight:600;margin-top:.2rem}"

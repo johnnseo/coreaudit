@@ -71,7 +71,7 @@ def create_app(cfg=None, run_audit=None, ai_reader=None):
         ts = ""
         if cfg["turnstile_site"]:
             ts = ('<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>'
-                  f'<div class="cf-turnstile" data-sitekey="{cfg["turnstile_site"]}"></div>')
+                  f'<div class="cf-turnstile" data-sitekey="{cfg["turnstile_site"]}" data-theme="dark"></div>')
         html = (STATIC / "embed.html").read_text()
         html = html.replace("__PRIVACY__", cfg["privacy_url"]).replace("__REVIEW__", cfg["review_url"]).replace("__TURNSTILE__", ts)
         html = html.replace("/*THEME*/", theme.css() + theme.dark_css())
