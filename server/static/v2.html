@@ -12,7 +12,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 var(--body);
 .wrap{max-width:680px;margin:0 auto}
 h1,h2,h3,button.go,a.go,.k,.pct,.big{font-family:var(--head)}
 h1{font-size:clamp(1.8rem,5.5vw,2.5rem);line-height:1.12;margin:.3rem 0 .6rem;font-weight:700;color:#fff}
-h2{font-size:1.3rem;margin:1.6rem 0 .5rem;font-weight:600;color:#fff}
+h2{font-size:1.3rem;margin:1.6rem 0 .5rem;font-weight:600;color:var(--gold)}
 h3{margin:0 0 .3rem;font-weight:600;color:#fff}
 .tag{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)}
 .lead{color:var(--muted);font-size:1.1rem;margin:0 0 1.2rem}
@@ -37,7 +37,7 @@ button.go[disabled]{opacity:.6;cursor:wait}
 .bar{height:10px;background:#4C4C47;border-radius:9px;overflow:hidden;margin:.6rem 0}.bar i{display:block;height:100%;width:6%;background:var(--gold);transition:width .6s}
 .stage{font-family:var(--head);font-size:1.05rem}
 .host{color:var(--muted);margin:0 0 1rem}
-.hero{display:flex;gap:1.2rem;align-items:center;margin-bottom:1rem}
+.hero{display:flex;gap:1.2rem;align-items:center;margin-bottom:1rem;border:1px solid var(--line);border-radius:var(--r);padding:.9rem 1.2rem}.hero.lo{border-color:var(--alert)}.hero.mid{border-color:var(--orange)}.hero.hi{border-color:var(--good)}.hero.lo .big{color:var(--alert)}.hero.mid .big{color:var(--orange)}.hero.hi .big{color:var(--good)}.lab{font-weight:600}
 .big{font-size:3.4rem;font-weight:800;line-height:1}.big small{font-size:1.1rem;color:var(--muted);font-weight:600}
 .rows{display:flex;flex-direction:column;gap:1rem}
 .r{display:grid;grid-template-columns:2.2rem 1fr 3.4rem;gap:.8rem;align-items:center}
@@ -45,11 +45,11 @@ button.go[disabled]{opacity:.6;cursor:wait}
 .nm{font-weight:600;display:flex;justify-content:space-between}.nm span{color:var(--muted);font-weight:400;font-size:.85rem}
 .pct{font-weight:800;font-size:1.25rem;text-align:right}
 .lo .fill{background:var(--alert)}.lo .pct{color:var(--alert-text)}
-.mid .fill{background:var(--gold)}.mid .pct{color:var(--gold)}
+.mid .fill{background:var(--orange)}.mid .pct{color:var(--orange)}
 .hi .fill{background:var(--good)}.hi .pct{color:var(--good)}
 .chips{display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0 0}
 .chip{border-radius:99px;padding:.25rem .8rem;font-size:.85rem;font-weight:600}
-.chip.bad{background:var(--alert);color:#fff}.chip.ok{background:#2f9e44;color:#fff}.chip.warn{background:var(--gold);color:#050505}
+.chip.bad{background:var(--alert);color:#fff}.chip.ok{background:#2f9e44;color:#fff}.chip.warn{background:var(--orange);color:#111}.chip.bad{color:#111}
 .locked{margin-top:1.2rem;border:2px solid var(--gold)}
 .lockl{list-style:none;padding:0;margin:.6rem 0 1rem;display:grid;gap:.35rem;color:var(--muted);font-size:.95rem}
 .lockl li:before{content:"\1F512";margin-right:.5rem;font-size:.85rem}
@@ -85,10 +85,11 @@ button.go[disabled]{opacity:.6;cursor:wait}
   <span class="tag">Your C.O.R.E. score</span>
   <p class="host" id="host"></p>
   <div class="card">
-    <div class="hero"><div class="big" id="overall"></div><div id="verdict"></div></div>
+    <div class="hero" id="hero"><div><div class="big" id="overall"></div><div class="lab" id="lab"></div></div><div id="verdict"></div></div>
     <div class="rows" id="rows"></div>
     <div class="chips" id="chips"></div>
     <p class="note" id="strength" style="margin:.8rem 0 0"></p>
+    <p class="note" style="margin:.8rem 0 0">Scale: <span style="color:var(--alert)">0&ndash;49 needs work</span> &middot; <span style="color:var(--orange)">50&ndash;69 acceptable</span> &middot; <span style="color:var(--good)">70&ndash;100 good to solid</span>. The score measures how well your website is set up, not how good your business is.</p>
   </div>
   <div class="card locked">
     <h2 style="margin-top:0">Get your full report, free</h2>
@@ -162,11 +163,12 @@ button.go[disabled]{opacity:.6;cursor:wait}
     })();
   }
 
-  function level(p){return p<40?'lo':p<70?'mid':'hi'}
+  function level(p){return p<50?'lo':p<70?'mid':'hi'}
+  var LABEL=function(p){return p<30?'Critical':p<50?'Needs important improvements':p<70?'Acceptable, but can improve':p<85?'Good foundation':'Solid and well set up'};
   function result(t,unlocked){
     if(unlocked)return location.href='/r/'+TOK;
     $('host').textContent=t.host;
-    $('overall').innerHTML=t.overall+'<small>%</small>';
+    $('overall').innerHTML=t.overall+'<small>%</small>';$('hero').className='hero '+level(t.overall);$('lab').textContent=LABEL(t.overall);
     $('verdict').innerHTML='<b>Start with '+t.areas.filter(function(a){return a.k===t.fix_first})[0].name+'.</b><br><span class="note">It is your lowest score, and a weak area leaks into the ones after it.</span>';
     var sub={C:'Who you serve',O:'What you sell',R:'How they reach you',E:'What you track and repeat'};
     $('rows').innerHTML=t.areas.map(function(a){return '<div class="r '+level(a.score)+'"><div class="k">'+a.k+'</div><div><div class="nm">'+a.name+'<span>'+sub[a.k]+'</span></div><div class="bar"><i class="fill" style="width:'+a.score+'%"></i></div></div><div class="pct">'+a.score+'%</div></div>'}).join('');

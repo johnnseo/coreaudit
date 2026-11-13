@@ -81,6 +81,11 @@ def create_app(cfg=None, run_audit=None, ai_reader=None):
 
     app.mount("/static/fonts", StaticFiles(directory=STATIC / "fonts"), name="fonts")
 
+    @app.get("/static/athan-logo-dark.png")
+    def logo():
+        return Response((STATIC / "athan-logo-dark.png").read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=86400"})
+
     @app.get("/widget.js")
     def widget():
         return Response((STATIC / "widget.js").read_text(), media_type="application/javascript",

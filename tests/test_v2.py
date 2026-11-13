@@ -64,7 +64,7 @@ def test_flow_teaser_then_unlock_spends_tokens_only_after_email(tmp_path):
     wait(c, t)
     assert calls["ai"] == 1
     html = c.get(f"/r/{t}").text
-    assert "Headline is vague" in html and "#343432" in html           # AI finding in, dark theme on
+    assert "Headline is vague" in html and "#111111" in html and "How to read your score" in html and "athan-logo-dark.png" in html           # AI finding in, dark theme on
     assert c.get(f"/api/v2/audits/{t}").json()["teaser"]["overall"] == 72   # scores did not move
     csv = c.get("/admin/leads.csv?key=k").text
     assert "audit-v2" in csv and "ann@x.com" in csv

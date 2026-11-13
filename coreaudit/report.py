@@ -19,7 +19,7 @@ BOOK = os.getenv("REVIEW_URL", "https://calendar.app.google/xkJUcqHrNDSCYwNi8")
 
 
 def label(score):
-    return "Strong" if score >= 85 else "Needs work" if score >= 60 else "Fix this first"
+    return "Strong" if score >= 85 else "Good" if score >= 70 else "Can improve" if score >= 50 else "Fix this first"
 
 
 HEIGHT_JS = ("<script>(function(){function p(){try{parent.postMessage({type:'core-audit-height',height:"
@@ -129,12 +129,12 @@ def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = ""
     bad = [f for f in fs if f["status"] in ("fail", "warn")]
     top = [f for f in bad][:4]
     h = [f"<h1>Website health check</h1><p class=sub>{e(host)}</p>",
-         f"<div class=hero><div class=big>{s['overall']}<small>/100</small></div>"
+         f"<div class='hero {theme.band(s['overall'])[0]}'><div><div class=big>{s['overall']}<small>/100</small></div><div class=lab>{theme.band(s['overall'])[1]}</div></div>"
          f"<div>Start with <b>{NAMES[s['fix_first']]}</b>. {e(ASKS[s['fix_first']])}</div></div>",
          "<div class=grid>"]
     for c in "CORE":
         sc = s[c]["score"]
-        h.append(f"<div class=area><b>{NAMES[c]}</b><div class=bar><i class='{"lo" if sc < 40 else ""}' style='width:{sc}%'></i></div>"
+        h.append(f"<div class=area><b>{NAMES[c]}</b><div class=bar><i class='{theme.band(sc)[0]}' style='width:{sc}%'></i></div>"
                  f"<span>{sc}/100 &middot; {label(sc)}</span></div>")
     h.append("</div>")
     h.append(f"<p class=chips><span class='chip g'>{len(good)} working</span> "
@@ -164,6 +164,10 @@ def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = ""
                        f"<td>{e((p['h1'] or [''])[0][:60]) or '<i>missing</i>'}</td></tr>" for p in pages)
         h.append(f"<details><summary>Page titles and headlines we checked ({res['crawl']['pages_crawled']} pages)</summary>"
                  f"<table><tr><th>Page</th><th>Title</th><th>Main headline</th></tr>{rows}</table></details>")
+    h.append("<h2>How to read your score</h2>" + theme.scale_html() +
+             "<details><summary>How the score is calculated</summary><p>Each of the four areas starts at 100 and loses points for every crack we find, "
+             "more for the ones that hurt most. The overall score is the average of the four. It measures how well your website is set up "
+             "to be found and to turn visitors into enquiries. It does not measure how good your business is.</p></details>")
     if bonus_url:
         h.append("<div class=bonus><span class=badge>Bonus</span><h2>The C.O.R.E. Scorecard</h2>"
                  "<p>The check above looks at your website from the outside. The scorecard looks at what only you know: "
@@ -180,7 +184,7 @@ def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = ""
            ".big{font-size:3rem;font-weight:800;line-height:1;color:var(--ink)}.big small{font-size:1rem;color:var(--muted);font-weight:600}"
            ".grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;margin-top:1rem}"
            ".area{background:var(--card);border-radius:12px;padding:.8rem}.bar{height:8px;background:var(--line);border-radius:9px;margin:.4rem 0}"
-           ".bar i{display:block;height:100%;background:var(--gold);border-radius:9px}.area span{font-size:.85rem;color:var(--muted)}"
+           ".bar i{display:block;height:100%;background:var(--gold);border-radius:9px}.bar i.lo{background:#e03131}.bar i.mid{background:#e8890c}.bar i.hi{background:#2f9e44}.area span{font-size:.85rem;color:var(--muted)}"
            ".f{border-left:4px solid var(--gold);background:#fffdf5;padding:.6rem .9rem;margin:.6rem 0;border-radius:0 10px 10px 0}"
            ".f.fail{border-color:#e03131}.f.good{border-color:#2f9e44}.f p{margin:.3rem 0}.ev{color:var(--muted);font-size:.92rem}"
            "table{width:100%;border-collapse:collapse;font-size:.92rem}td,th{text-align:left;padding:.4rem;border-bottom:1px solid var(--line)}"
@@ -199,8 +203,13 @@ def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = ""
            ".cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}.sp{background:var(--card);border-radius:var(--r);padding:1rem}"
            ".sp h3{margin:0 0 .4rem;color:var(--ink)}.score{font-size:2.6rem;font-weight:800;line-height:1}.score small{font-size:1rem;opacity:.6}"
            ".score.g{color:#2f9e44}.score.a{color:#b45f06}.score.r{color:#e03131}.sp small{color:var(--muted)}")
-    h.insert(0, "<a class=logo href='https://athanmarketing.com' target=_blank rel=noopener>"
-                "<img src='https://athanmarketing.com/wp-content/uploads/2025/01/cropped-ATHAN-180x60.webp' alt='Athan Marketing'></a>")
+    if dark:
+        h.insert(0, f"<div class=rh><b>C.O.R.E. WEBSITE CHECK</b> | {e(host)}</div>")
+        h.append(f"<div class=rf><a href='https://athanmarketing.com' target=_blank rel=noopener>"
+                 f"<img src='{assets}/static/athan-logo-dark.png' alt='Athan Marketing'></a></div>")
+    else:
+        h.insert(0, "<a class=logo href='https://athanmarketing.com' target=_blank rel=noopener>"
+                    "<img src='https://athanmarketing.com/wp-content/uploads/2025/01/cropped-ATHAN-180x60.webp' alt='Athan Marketing'></a>")
     return ("<!doctype html><html lang=en><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
             f"<title>Website health check</title><meta name=robots content=noindex><style>{theme.css(assets)}{css}{theme.dark_css() if dark else ''}</style><body>" + "".join(h) +
             HEIGHT_JS + "</body></html>")

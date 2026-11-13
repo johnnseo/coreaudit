@@ -30,20 +30,45 @@ def css(assets: str = "") -> str:
             "--body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif}")
 
 
-DARK = {"bg": "#343432", "card": "#3D3D3A", "line": "#4C4C47", "text": "#FFFFFF", "muted": "#CFCBBB",
-        "alert": "#FF5A36", "alert_text": "#FF8A6B", "good": "#4CC38A"}
+DARK = {"bg": "#111111", "card": "#1C1C1C", "line": "#3A3A38", "text": "#FFFFFF", "muted": "#CFCBBB",
+        "alert": "#FF6B6B", "orange": "#FF9F43", "good": "#4CC38A"}
+
+# The same reading scale as the audits Athan Marketing sends to clients
+SCALE = [(0, 29, "lo", "Critical"), (30, 49, "lo", "Needs important improvements"),
+         (50, 69, "mid", "Acceptable, but can improve"), (70, 84, "hi", "Good foundation"), (85, 100, "hi", "Solid and well set up")]
+
+
+def band(score):
+    for lo, hi, cls, label in SCALE:
+        if lo <= score <= hi:
+            return cls, label
+    return "hi", SCALE[-1][3]
+
+
+def scale_html() -> str:
+    dot = {"lo": "&#128308;", "mid": "&#128992;", "hi": "&#128994;"}
+    rows = "".join(f"<tr><td>{lo}&ndash;{hi}</td><td>{dot[c]} {l}</td></tr>" for lo, hi, c, l in SCALE)
+    return f"<table class=scale><tr><th>Score</th><th>What it means</th></tr>{rows}</table>"
 
 
 def dark_css() -> str:
-    """V2 look: dark grey page, white and yellow text, red/orange for what needs attention."""
+    """Dark brand look, from the Athan Marketing client audits: near-black page, gold headings, red/orange for what needs attention."""
     d = DARK
     return (f":root{{--bg:{d['bg']};--text:{d['text']};--ink:{d['text']};--muted:{d['muted']};--card:{d['card']};--line:{d['line']};"
-            f"--gold-deep:{THEME['gold']};--alert:{d['alert']};--alert-text:{d['alert_text']};--good:{d['good']};--r:{THEME['radius']}}}"
+            f"--gold-deep:{THEME['gold']};--alert:{d['alert']};--alert-text:{d['alert']};--orange:{d['orange']};--good:{d['good']};--r:{THEME['radius']}}}"
             f"body{{background:{d['bg']};color:{d['text']}}}"
-            ".logo{display:inline-block;background:#fff;border-radius:10px;padding:6px 12px}"
-            "div.f{background:#3A3A37}div.f.fail{border-color:var(--alert)}div.f.good{border-color:var(--good)}.ev{color:var(--muted)}"
-            ".cta{background:#262624;border:1px solid var(--line)}.bonus{background:#3A3A37}"
-            ".chip.r{background:var(--alert)}.chip.g{background:#2f9e44}.fail .ic{background:var(--alert)}.good .ic{background:#2f9e44}"
-            ".score.r{color:var(--alert-text)}.score.g{color:var(--good)}.score.a{color:var(--gold-deep)}"
-            ".bar i.lo{background:var(--alert)}td,th{border-bottom-color:var(--line)}a{color:var(--gold-deep)}.btn,.cta a{color:#050505}.sp small,.small{color:var(--muted)}"
+            "h2{color:var(--gold);border-bottom:1px solid var(--gold);padding-bottom:.3rem}.cta h2,.bonus h2,.card h2{border:0}"
+            ".rh{border-bottom:1px solid var(--gold);padding-bottom:.4rem;margin-bottom:1.4rem;font-size:.9rem;color:var(--muted)}.rh b{color:var(--gold)}"
+            ".rf{border-top:1px solid var(--gold);margin-top:2.5rem;padding-top:1rem}.rf img{height:44px;width:auto;display:block}"
+            "div.f{background:#222}div.f.fail{border-color:var(--alert)}div.f.good{border-color:var(--good)}.ev{color:var(--muted)}"
+            ".cta{background:#171717;border:1px solid var(--line)}.bonus{background:#171717}"
+            ".hero{background:transparent;border:1px solid var(--line);border-bottom:1px solid var(--line)}"
+            ".hero.lo{border-color:var(--alert)}.hero.mid{border-color:var(--orange)}.hero.hi{border-color:var(--good)}"
+            ".hero.lo .big{color:var(--alert)}.hero.mid .big{color:var(--orange)}.hero.hi .big{color:var(--good)}.lab{font-weight:600;margin-top:.2rem}"
+            ".bar i.lo{background:var(--alert)}.bar i.mid{background:var(--orange)}.bar i.hi{background:var(--good)}"
+            ".chip.r{background:var(--alert);color:#111}.chip.g{background:#2f9e44}.chip.a{background:var(--orange);color:#111}"
+            ".fail .ic{background:var(--alert);color:#111}.good .ic{background:#2f9e44}"
+            ".score.r{color:var(--alert)}.score.g{color:var(--good)}.score.a{color:var(--orange)}"
+            "table{border:1px solid var(--line)}th{background:var(--gold);color:#050505}td{background:var(--card)}td,th{border-bottom:1px solid var(--line)}"
+            "a{color:var(--gold-deep)}.btn,.cta a{color:#050505}.sp small,.small{color:var(--muted)}"
             ".q textarea,.small2 input{background:#fff;color:#050505}")
