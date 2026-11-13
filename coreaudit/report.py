@@ -211,5 +211,5 @@ def to_html(res: dict, endpoint: str = "", share_url: str = "", assets: str = ""
         h.insert(0, "<a class=logo href='https://athanmarketing.com' target=_blank rel=noopener>"
                     "<img src='https://athanmarketing.com/wp-content/uploads/2025/01/cropped-ATHAN-180x60.webp' alt='Athan Marketing'></a>")
     return ("<!doctype html><html lang=en><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
-            f"<title>Website health check</title><meta name=robots content=noindex><style>{theme.css(assets)}{css}{theme.dark_css() if dark else ''}</style><body>" + "".join(h) +
+            f"<title>Website health check</title><meta name=robots content=noindex><link rel=icon href='{assets}/static/favicon-32.png' type='image/png'><link rel=apple-touch-icon href='{assets}/static/apple-touch-icon.png'><style>{theme.css(assets)}{css}{theme.dark_css() if dark else ''}</style><body>" + "".join(h) +
             HEIGHT_JS + "</body></html>")

@@ -86,11 +86,16 @@ def create_app(cfg=None, run_audit=None, ai_reader=None):
         return Response((STATIC / "athan-logo-dark.png").read_bytes(), media_type="image/png",
                         headers={"Cache-Control": "public, max-age=86400"})
 
-    for _n in ("athan-logo-full.png", "athan-logo-grey.png"):
+    for _n in ("athan-logo-full.png", "athan-logo-grey.png", "favicon-32.png", "favicon-192.png", "apple-touch-icon.png"):
         def _logo(_n=_n):
             return Response((STATIC / _n).read_bytes(), media_type="image/png",
                             headers={"Cache-Control": "public, max-age=86400"})
         app.get("/static/" + _n)(_logo)
+
+    @app.get("/favicon.ico")
+    def favicon():
+        return Response((STATIC / "favicon.ico").read_bytes(), media_type="image/x-icon",
+                        headers={"Cache-Control": "public, max-age=86400"})
 
     @app.get("/widget.js")
     def widget():

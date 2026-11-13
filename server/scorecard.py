@@ -196,14 +196,18 @@ def add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests_mod
         tot = "".join(
             f"<tr><td><b>{escape(r['magnet'])}</b></td><td>{r['views']}</td><td>{r['leads']}</td><td>{r['done']}</td>"
             f"<td><b>{per100(r['leads'], r['views'])}</b></td></tr>" for r in db.ab_totals())
-        html = ("<!doctype html><meta name=robots content=noindex><meta charset=utf-8><title>Lead magnet test</title>"
+        html = ("<!doctype html><meta name=robots content=noindex><meta charset=utf-8><link rel=icon href=/static/favicon-32.png><title>Lead magnet test</title>"
                 "<style>body{font:16px system-ui;max-width:820px;margin:2rem auto;padding:0 1rem}td,th{padding:.5rem;border-bottom:1px solid #ddd;text-align:left}</style>"
-                "<h1>Lead magnet test</h1><h2>All sources together</h2>"
-                "<table><tr><th>Page</th><th>Visitors</th><th>Gave email</th><th>Finished a check</th><th>Emails per 100 visitors</th></tr>" + tot + "</table>"
+                "<h1>Lead magnet test</h1>"
+                "<div style=\"background:#f6f1de;border-radius:10px;padding:.8rem 1rem\"><b>How to read this.</b> The last column is a rate, not a count of emails. "
+                "It is <i>emails collected \u00f7 visitors \u00d7 100</i>. Example: 5 visitors and 1 email = 20.0, meaning 1 in 5 left their email. "
+                "&quot;Visitors&quot; counts every page view with a new browser, including your own tests and bots, so small numbers say little yet. "
+                "&quot;Gave email&quot; is real people who submitted the form.</div><h2>All sources together</h2>"
+                "<table><tr><th>Page</th><th>Visitors</th><th>Gave email</th><th>Finished a check</th><th>Conversion (emails per 100 visitors)</th></tr>" + tot + "</table>"
                 "<p><b>audit</b> is version 1 (email first). <b>audit-v2</b> is version 2 (score first, email to unlock). "
                 "In version 2, &quot;finished a check&quot; happens before the email.</p><h2>By source</h2><p>Variant is the group a visitor was put in by <code>/get</code>. "
                 "<b>direct</b> means they opened that page without going through the split.</p>"
                 "<table><tr><th>Variant</th><th>Page</th><th>Visitors</th><th>Gave email</th><th>Finished</th>"
-                "<th>Emails per 100 visitors</th></tr>" + tr + "</table>"
+                "<th>Conversion (emails per 100 visitors)</th></tr>" + tr + "</table>"
                 "<p>Wait for roughly 100 visitors in each group before picking a winner. Fewer than that is mostly luck.</p>")
         return HTMLResponse(html, headers=NOINDEX)

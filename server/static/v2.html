@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="/static/favicon-192.png"><link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <title>C.O.R.E. Score | Athan Marketing</title>
 <style>
 /*THEME*/
@@ -53,7 +53,7 @@ button.go[disabled]{opacity:.6;cursor:wait}
 .locked{margin-top:1.2rem;border:2px solid var(--gold)}
 .lockl{list-style:none;padding:0;margin:.6rem 0 1rem;display:grid;gap:.35rem;color:var(--muted);font-size:.95rem}
 .lockl li:before{content:"\1F512";margin-right:.5rem;font-size:.85rem}
-</style>
+.how{background:var(--card);border-radius:var(--r);padding:1rem 1.2rem;margin:0 0 1.2rem;font-size:.97rem}.how ol{margin:.4rem 0 0;padding-left:1.2rem}.how li{margin:.3rem 0;color:var(--muted)}.core small{display:block;font-size:.72rem;font-weight:400;color:var(--muted);margin-top:.15rem}h1{color:var(--gold)}</style>
 </head>
 <body>
 <div class="wrap">
@@ -62,7 +62,8 @@ button.go[disabled]{opacity:.6;cursor:wait}
   <span class="tag">Free &middot; about 2 minutes</span>
   <h1>How strong is your marketing foundation?</h1>
   <p class="lead">Enter your website. In about a minute you see your C.O.R.E. score for each part of your marketing. The full report is free with your email.</p>
-  <div class="core"><div><b>C</b>Client</div><div><b>O</b>Offer</div><div><b>R</b>Route</div><div><b>E</b>Engine</div></div>
+  <div class="how"><b>How this works</b><ol><li>Type your website. We read it the way a visitor does: your homepage text, how fast it loads on a phone, and how you show up on Google.</li><li>You see your score right away, from 0 to 100, for each of four parts: <b>C</b>lient, <b>O</b>ffer, <b>R</b>oute, <b>E</b>ngine.</li><li>The full report, with every issue and how to fix it, is free if you leave your email.</li></ol></div>
+  <div class="core"><div><b>C</b>Client<small>Who you serve</small></div><div><b>O</b>Offer<small>What you sell</small></div><div><b>R</b>Route<small>How they reach you</small></div><div><b>E</b>Engine<small>What you track and repeat</small></div></div>
   <form class="card" id="f">
     <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website2" tabindex="-1" autocomplete="off"></label></div>
     <label class="f">Your website <input type="text" name="url" placeholder="yourbusiness.com" inputmode="url" autocomplete="url" required></label>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="/static/favicon-192.png"><link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <title>The C.O.R.E. Scorecard</title>
 <style>
 /*THEME*/
@@ -51,7 +51,7 @@ button.go[disabled]{opacity:.6;cursor:wait}
 .first{border-left:4px solid var(--gold);padding-left:16px;margin:1.4rem 0}
 .first ul{margin:.4rem 0 0;padding-left:1.2rem}
 .hide{display:none}
-</style>
+.how{background:var(--card);border-radius:var(--r);padding:1rem 1.2rem;margin:0 0 1.2rem;font-size:.97rem}.how ol{margin:.4rem 0 0;padding-left:1.2rem}.how li{margin:.3rem 0;color:var(--muted)}.core small{display:block;font-size:.72rem;font-weight:400;color:var(--muted)}</style>
 </head>
 <body>
 <div class="wrap">
@@ -60,7 +60,8 @@ button.go[disabled]{opacity:.6;cursor:wait}
   <span class="tag">Free &middot; about 3 minutes</span>
   <h1>The C.O.R.E. Scorecard</h1>
   <p class="lead">Twelve quick questions. A score for each part of your marketing, and the one to fix first.</p>
-  <div class="core"><div><b>C</b>Client</div><div><b>O</b>Offer</div><div><b>R</b>Route</div><div><b>E</b>Engine</div></div>
+  <div class="how"><b>How this works</b><ol><li>You answer 12 questions, three for each part: <b>C</b>lient, <b>O</b>ffer, <b>R</b>oute, <b>E</b>ngine. It takes about 3 minutes.</li><li>These are things only you know about your business, so nothing is checked on your website.</li><li>Pick the answer that is true <i>today</i>, not the one you hope to reach. An honest answer gives you a useful result.</li><li>At the end you see a score for each part and the one to fix first. We email you the link so you can come back to it.</li></ol></div>
+  <div class="core"><div><b>C</b>Client<small>Who you serve</small></div><div><b>O</b>Offer<small>What you sell</small></div><div><b>R</b>Route<small>How they reach you</small></div><div><b>E</b>Engine<small>What you track and repeat</small></div></div>
   <form class="card" id="f">
     <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website2" tabindex="-1" autocomplete="off"></label></div>
     <div class="row">
