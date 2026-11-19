@@ -78,7 +78,7 @@ def add_routes(app, cfg, db, aw, client_ip, NOINDEX, hooks, requests_mod):
         hits[iph] = recent + [now]
         src, vid = clean_src(b.get("src")), req.cookies.get("core_vid", "")
         tags = ["core-checklist"] + (["newsletter-optin"] if b.get("consent_marketing") else [])
-        status = aw.add(email, name, tags, {}, None)
+        status = aw.add(email, name, tags, {"report_url": cfg["public_base"] + "/checklist.pdf", "result_type": "checklist"}, None)
         db.add_checklist_lead(created=now, name=name, email=email, email_norm=limits.norm_email(email),
                               consent_marketing=1 if b.get("consent_marketing") else 0, consent_at=now,
                               variant=src, vid=vid, aweber=status)

@@ -156,11 +156,12 @@ def add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests_mod
         res = score(a)
         names = [c["name"] for c in CRACKS]
         report_url = f'{cfg["public_base"]}/s/{token}'
-        tags = ["core-scorecard", f"fix-first-{CRACKS[res['fix_first']]['k']}", f"scorecard-{band(res['total'], res['max_total'])}"]
+        tags = ["core-lead"]
         if row["consent_marketing"]:
             tags.append("newsletter-optin")
         status = aw.add(row["email"], row["name"], tags, {
-            "score": f"{res['total']}/{res['max_total']}", "fix_first": names[res["fix_first"]], "report_url": report_url})
+            "score": f"{res['total']}/{res['max_total']}", "fix_first": names[res["fix_first"]], "report_url": report_url,
+            "result_type": "scorecard"})
         db.finish_scorecard(token, json.dumps(res), json.dumps(a), status)
         db.log_event(row["vid"] or "", row["variant"] or "direct", "scorecard", "complete")
         if cfg["alert_webhook"]:

@@ -27,6 +27,7 @@ from . import scorecard as scorecard_mod
 from . import watch as watch_mod
 from . import v2 as v2_mod
 from .aweber import AWeber
+from .systeme import Systeme
 from .db import DB
 
 STATIC = Path(__file__).parent / "static"
@@ -36,7 +37,7 @@ NOINDEX = {"X-Robots-Tag": "noindex, nofollow", "Referrer-Policy": "no-referrer"
 def create_app(cfg=None, run_audit=None, ai_reader=None):
     cfg = cfg or config_mod.get()
     db = DB(cfg["db_path"])
-    aw = AWeber(cfg, db)
+    aw = Systeme(cfg, db) if cfg.get("esp") == "systeme" else AWeber(cfg, db)
     pool = ThreadPoolExecutor(max_workers=cfg["max_concurrent"])
     runner = run_audit or audit_mod.run_audit
     cfg["static"] = STATIC
@@ -166,7 +167,7 @@ def create_app(cfg=None, run_audit=None, ai_reader=None):
     def after_audit(token, row, res, ip, extra_tags=()):
         s = res["scores"]
         report_url = f'{cfg["public_base"]}/r/{token}'
-        tags = ["core-audit", f"fix-first-{s['fix_first']}", f"route-{res['lead_route']}", *extra_tags]
+        tags = ["core-lead"]
         if row["consent_marketing"]:
             tags.append("newsletter-optin")
         try:
@@ -175,7 +176,7 @@ def create_app(cfg=None, run_audit=None, ai_reader=None):
             public = False
         status = aw.add(row["email"], row["name"], tags, {
             "site": row["domain"], "score": str(s["overall"]), "fix_first": {"C": "Client", "O": "Offer", "R": "Route", "E": "Engine"}[s["fix_first"]],
-            "report_url": report_url}, ip if public else None)
+            "report_url": report_url, "result_type": "website check"}, ip if public else None)
         db.update(token, aweber=status)
         if cfg["alert_webhook"]:
             try:
@@ -223,11 +224,6 @@ def create_app(cfg=None, run_audit=None, ai_reader=None):
         findings = [Finding(**{k: v for k, v in f.items() if k in Finding.__dataclass_fields__}) for f in res["findings"]]
         route = route_lead(res["scores"], findings, a)
         db.update(token, answers=json.dumps(a), route=route)
-        if aw.configured:
-            aw.add(r["email"], r["name"], [f"route-{route}", f"wants-{a['help'] or 'unsure'}"] + [f"goal-{g}" for g in a["goals"]],
-                   {"site": r["domain"], "score": str(res["scores"]["overall"]),
-                    "fix_first": {"C": "Client", "O": "Offer", "R": "Route", "E": "Engine"}[res["scores"]["fix_first"]],
-                    "report_url": f'{cfg["public_base"]}/r/{token}'})
         if cfg["alert_webhook"]:
             try:
                 requests.post(cfg["alert_webhook"], json={"text": (
@@ -264,13 +260,19 @@ def create_app(cfg=None, run_audit=None, ai_reader=None):
                         "done" if r["done"] else "started", "", r["consent_marketing"], r["aweber"], "", sc, "scorecard", r.get("variant") or ""])
         return PlainTextResponse(buf.getvalue(), media_type="text/csv")
 
+    def need_aweber():
+        if cfg.get("esp") == "systeme":
+            raise HTTPException(404)
+
     @app.get("/admin/aweber/connect")
     def aw_connect(req: Request):
         admin(req)
+        need_aweber()
         return RedirectResponse(aw.connect_url())
 
     @app.get("/admin/aweber/callback")
     def aw_callback(req: Request):
+        need_aweber()
         if not aw.state_ok(req.query_params.get("state", "")):
             raise HTTPException(400, "Bad state")
         aw.exchange_code(req.query_params.get("code", ""))
@@ -280,6 +282,7 @@ def create_app(cfg=None, run_audit=None, ai_reader=None):
     @app.get("/admin/aweber/lists")
     def aw_lists(req: Request):
         admin(req)
+        need_aweber()
         return aw.lists()
 
     scorecard_mod.add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests, hooks)

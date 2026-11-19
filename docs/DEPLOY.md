@@ -110,3 +110,21 @@ Or link to `https://audit.athanmarketing.com/get?src=youtube`. `?v=v1` or `?v=v2
 **Turn on Turnstile for version 2.** The check now runs before we have an email, so set `TURNSTILE_SITEKEY` and `TURNSTILE_SECRET` in Render (free at Cloudflare) to keep bots from running up your PageSpeed, DataForSEO and Claude usage.
 
 **Token cost.** One Claude call per unlocked report (homepage text, about 2,500 words in, up to 1,500 tokens out). To make it cheaper, set `COREAUDIT_MODEL` to `claude-haiku-5-5` in Render; the copy reading may be a little less sharp.
+
+
+## Email platform: which tags and fields the tool sends (one setup, either platform)
+Set `EMAIL_PROVIDER` to `aweber` (default) or `systeme`. For systeme.io also set `SYSTEME_API_KEY`
+(systeme.io > profile menu > Settings > MCP & API keys > Public API keys; the key is shown once).
+
+Tags (kept to a minimum on purpose):
+- `core-lead`: the person has a result (website check or scorecard). Starts the results + follow-up series.
+- `core-checklist`: the person only asked for the checklist. Starts the short checklist series.
+- `newsletter-optin`: they ticked the optional marketing box.
+- `booked-review`: added by you (or an automation) when someone books the Foundation Review. Stops the series.
+
+Custom fields to create first, exact lowercase names: `site`, `score`, `fix_first`, `report_url`, `result_type`.
+`result_type` is `website check`, `scorecard` or `checklist`. `report_url` is the link to their result (or the PDF).
+
+The first time with systeme.io, run one test and read the `aweber` column in `/admin/leads.csv`
+(the column name is old; it shows the result for whichever platform you use): it says `ok` or the exact error.
+`AB_V2_SHARE` now defaults to 0, so `/get` sends everyone to version 1 (email first).

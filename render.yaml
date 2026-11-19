@@ -24,6 +24,8 @@ services:
       - {key: PAGESPEED_API_KEY, sync: false}
       - {key: DATAFORSEO_LOGIN, sync: false}
       - {key: DATAFORSEO_PASSWORD, sync: false}
+      - {key: EMAIL_PROVIDER, value: aweber}   # set to systeme to use systeme.io instead
+      - {key: SYSTEME_API_KEY, sync: false}
       - {key: AWEBER_CLIENT_ID, sync: false}
       - {key: AWEBER_CLIENT_SECRET, sync: false}
       - {key: AWEBER_ACCOUNT_ID, sync: false}

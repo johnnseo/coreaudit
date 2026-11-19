@@ -27,10 +27,12 @@ def get():
         "v2_domain_month": int(e("V2_MAX_PER_DOMAIN_MONTH", "3")),
         "v2_email_month": int(e("V2_MAX_PER_EMAIL_MONTH", "3")),
         "max_audits_per_day": int(e("MAX_AUDITS_PER_DAY", "150")),   # V2 runs before an email exists, so cap the total
-        "ab_v2_share": float(e("AB_V2_SHARE", "0.5")),
+        "ab_v2_share": float(e("AB_V2_SHARE", "0")),
         "turnstile_site": e("TURNSTILE_SITEKEY", ""),
         "turnstile_secret": e("TURNSTILE_SECRET", ""),
         "alert_webhook": e("ALERT_WEBHOOK_URL", ""),
+        "esp": e("EMAIL_PROVIDER", "aweber").lower(),     # "aweber" or "systeme"
+        "systeme": {"api_key": e("SYSTEME_API_KEY", "")},
         "aweber": {"client_id": e("AWEBER_CLIENT_ID", ""), "client_secret": e("AWEBER_CLIENT_SECRET", ""),
                    "account_id": e("AWEBER_ACCOUNT_ID", ""), "list_id": e("AWEBER_LIST_ID", ""),
                    "refresh_token": e("AWEBER_REFRESH_TOKEN", "")},
