@@ -21,7 +21,7 @@ def get():
         "admin_emails": [x.lower() for x in _list("ADMIN_EMAILS")],   # unlimited tries, for testing
         "ip_salt": e("IP_SALT", "change-me"),
         "privacy_url": e("PRIVACY_URL", "https://athanmarketing.com/privacy-policy/"),
-        "review_url": e("REVIEW_URL", "https://calendar.app.google/xkJUcqHrNDSCYwNi8"),
+        "review_url": e("REVIEW_URL", "https://athanmarketing.com/foundation-review/"),
         "video_id": e("VIDEO_ID", ""),                      # YouTube id of the 11-minute video, e.g. dQw4w9WgXcQ
         "workshop_url": e("WORKSHOP_URL", ""),              # leave empty to hide the quiet workshop line
         "v2_domain_month": int(e("V2_MAX_PER_DOMAIN_MONTH", "3")),

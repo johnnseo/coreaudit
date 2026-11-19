@@ -15,7 +15,7 @@ ASKS = {"C": "Is it clear who you help and what problem you solve?",
         "O": "Is what you sell specific, and does Google understand it?",
         "R": "Is it easy for a visitor to take the next step?",
         "E": "Is the technical foundation solid: speed, indexing, tracking?"}
-BOOK = os.getenv("REVIEW_URL", "https://calendar.app.google/xkJUcqHrNDSCYwNi8")
+BOOK = os.getenv("REVIEW_URL", "https://athanmarketing.com/foundation-review/")
 
 
 def label(score):
