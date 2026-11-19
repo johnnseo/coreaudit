@@ -31,7 +31,7 @@ It resizes itself. If your theme blocks scripts in that block, use a plugin such
 5. Visit `https://audit.athanmarketing.com/admin/aweber/lists?key=YOUR_ADMIN_KEY`. It shows your account id and
    list id. Put them in `AWEBER_ACCOUNT_ID` and `AWEBER_LIST_ID`.
 6. In AWeber, create an automation / campaign email that sends when someone is added with the tag `core-audit`.
-   Put `{!cf_report_url}` in it as the "View my report" link. (That email is how the report link reaches their inbox.)
+   Insert the report link with the editor's **Personalize** menu > **Subscriber's Info** > custom field `report_url` (in AWeber's newer editors it shows as `{{ subscriber.custom_field['report_url'] }}`; `{!cf_report_url}` is the older syntax). Use it as the "View my report" link. (That email is how the report link reaches their inbox.)
    Use tags to segment: `route-done_for_you`, `route-strategy_session`, `route-nurture`, `newsletter-optin`,
    `fix-first-C/O/R/E`.
 7. Turn on **confirmed opt-in** in AWeber if you want double opt-in for the marketing list.
