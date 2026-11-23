@@ -135,6 +135,7 @@ def create_app(cfg=None, run_audit=None, ai_reader=None):
                 "email_limit": ("You have used your 2 free checks", "Each person gets 2 free checks. The next step is a conversation about what to fix first."),
                 "domain_limit": ("This website has already been checked twice", "Each company gets 2 free checks. If this is your site, book a call and we will go deeper."),
                 "ip_limit": ("Too many checks from this network today", "Please try again tomorrow, or book a call and we will do it together."),
+                "busy": ("We have reached today's limit of free checks", "Please come back tomorrow, or book a free Foundation Review and we will look at your site together."),
             }
             t, m = msgs[code]
             return JSONResponse({"limit": code, "title": t, "message": m}, 429)

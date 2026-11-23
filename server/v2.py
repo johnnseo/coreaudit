@@ -81,10 +81,10 @@ def add_routes(app, cfg, db, client_ip, frame_headers, NOINDEX, hooks, ctx):
 
     def limit(code):
         msgs = {
-            "domain_limit": ("This website has been checked 3 times this month",
-                             "Each company gets 3 free checks a month. If this is your site, book a call and we will go deeper."),
-            "email_limit": ("You have used your 3 free reports this month",
-                            "Each person gets 3 free reports a month. The next step is a conversation about what to fix first."),
+            "domain_limit": ("This website has been checked twice this month",
+                             "Each company gets 2 free checks a month. If this is your site, book a call and we will go deeper."),
+            "email_limit": ("You have used your 2 free reports this month",
+                            "Each person gets 2 free reports a month. The next step is a conversation about what to fix first."),
             "ip_limit": ("Too many checks from this network today", "Please try again tomorrow, or book a call and we will do it together."),
             "busy": ("We are very busy right now", "Please try again in a little while, or book a call and we will do it together."),
         }

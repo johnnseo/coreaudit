@@ -127,7 +127,7 @@ def add_routes(app, cfg, db, aw, client_ip, frame_headers, NOINDEX, requests_mod
             return JSONResponse({"message": "Please tick the privacy box so we can send your results."}, 400)
         ip = client_ip(req)
         iph = limits.hash_ip(ip, cfg["ip_salt"])
-        if db.count_scorecards(ip_hash=iph, since_hours=24) >= 10:
+        if db.count_scorecards(ip_hash=iph, since_hours=24) >= cfg["scorecard_ip_day"]:
             return JSONResponse({"message": "Too many from this network today. Please try again tomorrow."}, 429)
         en = limits.norm_email(email)
         vid, variant = who(req), src

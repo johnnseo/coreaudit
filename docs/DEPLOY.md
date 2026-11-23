@@ -105,7 +105,7 @@ Version 1 (`/embed`, email first) is unchanged.
 
 Or link to `https://audit.athanmarketing.com/get?src=youtube`. `?v=v1` or `?v=v2` forces a version. `AB_V2_SHARE` (default 0.5) sets how many go to version 2. Read the result at `/admin/ab?key=YOUR_ADMIN_KEY`, first table: **emails per 100 visitors** for `audit` (version 1) and `audit-v2`. Judge on that, then on how many book a call. The leads CSV has `magnet` = `audit` or `audit-v2`.
 
-**Limits (version 2).** 3 checks per company per 30 days (`V2_MAX_PER_DOMAIN_MONTH`), 3 reports per email per 30 days (`V2_MAX_PER_EMAIL_MONTH`), `MAX_PER_IP_DAY` per network per day, and `MAX_AUDITS_PER_DAY` (default 150) for the whole service. The same site checked again within 7 days reuses the saved result and costs nothing.
+**Limits (version 2).** 2 checks per company per 30 days (`V2_MAX_PER_DOMAIN_MONTH`), 2 reports per email per 30 days (`V2_MAX_PER_EMAIL_MONTH`). The same site checked again within 7 days reuses the saved result and costs nothing.
 
 **Turn on Turnstile for version 2.** The check now runs before we have an email, so set `TURNSTILE_SITEKEY` and `TURNSTILE_SECRET` in Render (free at Cloudflare) to keep bots from running up your PageSpeed, DataForSEO and Claude usage.
 
@@ -128,3 +128,10 @@ Custom fields to create first, exact lowercase names: `site`, `score`, `fix_firs
 The first time with systeme.io, run one test and read the `aweber` column in `/admin/leads.csv`
 (the column name is old; it shows the result for whichever platform you use): it says `ok` or the exact error.
 `AB_V2_SHARE` now defaults to 0, so `/get` sends everyone to version 1 (email first).
+
+
+## Limits (version 1 and the scorecard): protecting your credits
+- Website check: 2 per email and 2 per company, for life (`MAX_AUDITS_PER_EMAIL`, `MAX_AUDITS_PER_DOMAIN`). Failed runs do not count.
+- Per network (IP): 4 a day (`MAX_AUDITS_PER_IP_DAY`).
+- Whole service: 60 checks per rolling 24 hours (`MAX_AUDITS_PER_DAY`). When it is reached, visitors see a polite "come back tomorrow or book a Foundation Review" message. Your own emails in `ADMIN_EMAILS` are exempt.
+- Scorecard: one result per email (running it again shows the same result), 6 starts per network per day (`SCORECARD_MAX_PER_IP_DAY`). It does not call any paid service, so it costs no credits.

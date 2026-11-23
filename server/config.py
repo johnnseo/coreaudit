@@ -14,7 +14,7 @@ def get():
         "db_path": e("DB_PATH", "data/core.db"),
         "max_per_email": int(e("MAX_AUDITS_PER_EMAIL", "2")),
         "max_per_domain": int(e("MAX_AUDITS_PER_DOMAIN", "2")),
-        "max_per_ip_day": int(e("MAX_AUDITS_PER_IP_DAY", "6")),
+        "max_per_ip_day": int(e("MAX_AUDITS_PER_IP_DAY", "4")),
         "max_concurrent": int(e("MAX_CONCURRENT_AUDITS", "3")),
         "crawl_pages": int(e("CRAWL_PAGES", "15")),
         "admin_key": e("ADMIN_KEY", ""),
@@ -24,9 +24,10 @@ def get():
         "review_url": e("REVIEW_URL", "https://athanmarketing.com/foundation-review/"),
         "video_id": e("VIDEO_ID", ""),                      # YouTube id of the 11-minute video, e.g. dQw4w9WgXcQ
         "workshop_url": e("WORKSHOP_URL", ""),              # leave empty to hide the quiet workshop line
-        "v2_domain_month": int(e("V2_MAX_PER_DOMAIN_MONTH", "3")),
-        "v2_email_month": int(e("V2_MAX_PER_EMAIL_MONTH", "3")),
-        "max_audits_per_day": int(e("MAX_AUDITS_PER_DAY", "150")),   # V2 runs before an email exists, so cap the total
+        "v2_domain_month": int(e("V2_MAX_PER_DOMAIN_MONTH", "2")),
+        "v2_email_month": int(e("V2_MAX_PER_EMAIL_MONTH", "2")),
+        "max_audits_per_day": int(e("MAX_AUDITS_PER_DAY", "60")),   # total checks per rolling 24h across everyone: the credit safety net
+        "scorecard_ip_day": int(e("SCORECARD_MAX_PER_IP_DAY", "6")),
         "ab_v2_share": float(e("AB_V2_SHARE", "0")),
         "turnstile_site": e("TURNSTILE_SITEKEY", ""),
         "turnstile_secret": e("TURNSTILE_SECRET", ""),

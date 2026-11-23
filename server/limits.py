@@ -45,4 +45,6 @@ def check(db, cfg, email_norm: str, domain: str, ip_hash: str):
         return False, "domain_limit"
     if db.count_audits(ip_hash=ip_hash, since_hours=24) >= cfg["max_per_ip_day"]:
         return False, "ip_limit"
+    if db.count_audits(since_hours=24) >= cfg["max_audits_per_day"]:
+        return False, "busy"
     return True, "ok"
